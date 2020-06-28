@@ -1,0 +1,6 @@
+(library
+ (name        aws_kms)
+ (public_name aws_kms)
+ (synopsis "aws-AWS Key Management Service")
+ (flags (:standard -w -27))
+ (libraries aws))

@@ -38,6 +38,7 @@ LIBRARIES := \
 	aws-s3  \
 	aws-route53 \
 	aws-sqs \
+	aws-kms \
 
 .PHONY: $(LIBRARIES)
 $(LIBRARIES): aws-%:
