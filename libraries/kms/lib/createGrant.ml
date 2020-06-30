@@ -43,14 +43,7 @@ let of_http body =
         (let open Error in
            BadResponse { body; message = ("Error parsing xml: " ^ msg) })
 let parse_error code err =
-  let errors =
-    [Errors_internal.LimitExceeded;
-    Errors_internal.InvalidGrantToken;
-    Errors_internal.KMSInternal;
-    Errors_internal.InvalidArn;
-    Errors_internal.DependencyTimeout;
-    Errors_internal.Disabled;
-    Errors_internal.NotFound] @ Errors_internal.common in
+  let errors = [] @ Errors_internal.common in
   match Errors_internal.of_string err with
   | Some var ->
       if

@@ -1,43 +1,61 @@
 type t =
-  | AlreadyExists 
+  | AlreadyExistsException 
   | AuthFailure 
   | Blocked 
-  | DependencyTimeout 
-  | Disabled 
+  | CloudHsmClusterInUseException 
+  | CloudHsmClusterInvalidConfigurationException 
+  | CloudHsmClusterNotActiveException 
+  | CloudHsmClusterNotFoundException 
+  | CloudHsmClusterNotRelatedException 
+  | CustomKeyStoreHasCMKsException 
+  | CustomKeyStoreInvalidStateException 
+  | CustomKeyStoreNameInUseException 
+  | CustomKeyStoreNotFoundException 
+  | DependencyTimeoutException 
+  | DisabledException 
   | DryRunOperation 
+  | ExpiredImportTokenException 
   | IdempotentParameterMismatch 
   | IncompleteSignature 
+  | IncorrectKeyException 
+  | IncorrectKeyMaterialException 
+  | IncorrectTrustAnchorException 
   | InternalFailure 
   | InvalidAction 
-  | InvalidAliasName 
-  | InvalidArn 
-  | InvalidCiphertext 
+  | InvalidAliasNameException 
+  | InvalidArnException 
+  | InvalidCiphertextException 
   | InvalidClientTokenId 
-  | InvalidGrantToken 
-  | InvalidKeyUsage 
-  | InvalidMarker 
+  | InvalidGrantIdException 
+  | InvalidGrantTokenException 
+  | InvalidImportTokenException 
+  | InvalidKeyUsageException 
+  | InvalidMarkerException 
   | InvalidParameter 
   | InvalidParameterCombination 
   | InvalidParameterValue 
   | InvalidQueryParameter 
-  | KMSInternal 
-  | KeyUnavailable 
-  | LimitExceeded 
-  | MalformedPolicyDocument 
+  | KMSInternalException 
+  | KMSInvalidSignatureException 
+  | KMSInvalidStateException 
+  | KeyUnavailableException 
+  | LimitExceededException 
+  | MalformedPolicyDocumentException 
   | MalformedQueryString 
   | MissingAction 
   | MissingAuthenticationToken 
   | MissingParameter 
-  | NotFound 
+  | NotFoundException 
   | OptInRequired 
   | PendingVerification 
   | RequestExpired 
   | RequestLimitExceeded 
   | ServiceUnavailable 
+  | TagException 
   | Throttling 
   | UnauthorizedOperation 
   | UnknownParameter 
-  | UnsupportedOperation 
+  | UnsupportedOperationException 
   | UnsupportedProtocol 
   | ValidationError 
   | Uninhabited 
@@ -70,133 +88,197 @@ let common =
   IncompleteSignature]
 let to_http_code e =
   match e with
-  | AlreadyExists -> Some 400
+  | AlreadyExistsException -> None
   | AuthFailure -> None
   | Blocked -> None
-  | DependencyTimeout -> Some 503
-  | Disabled -> Some 409
+  | CloudHsmClusterInUseException -> None
+  | CloudHsmClusterInvalidConfigurationException -> None
+  | CloudHsmClusterNotActiveException -> None
+  | CloudHsmClusterNotFoundException -> None
+  | CloudHsmClusterNotRelatedException -> None
+  | CustomKeyStoreHasCMKsException -> None
+  | CustomKeyStoreInvalidStateException -> None
+  | CustomKeyStoreNameInUseException -> None
+  | CustomKeyStoreNotFoundException -> None
+  | DependencyTimeoutException -> None
+  | DisabledException -> None
   | DryRunOperation -> None
+  | ExpiredImportTokenException -> None
   | IdempotentParameterMismatch -> None
   | IncompleteSignature -> Some 400
+  | IncorrectKeyException -> None
+  | IncorrectKeyMaterialException -> None
+  | IncorrectTrustAnchorException -> None
   | InternalFailure -> Some 500
   | InvalidAction -> Some 400
-  | InvalidAliasName -> Some 400
-  | InvalidArn -> Some 400
-  | InvalidCiphertext -> Some 400
+  | InvalidAliasNameException -> None
+  | InvalidArnException -> None
+  | InvalidCiphertextException -> None
   | InvalidClientTokenId -> Some 403
-  | InvalidGrantToken -> Some 400
-  | InvalidKeyUsage -> Some 400
-  | InvalidMarker -> Some 400
+  | InvalidGrantIdException -> None
+  | InvalidGrantTokenException -> None
+  | InvalidImportTokenException -> None
+  | InvalidKeyUsageException -> None
+  | InvalidMarkerException -> None
   | InvalidParameter -> None
   | InvalidParameterCombination -> Some 400
   | InvalidParameterValue -> Some 400
   | InvalidQueryParameter -> Some 400
-  | KMSInternal -> Some 500
-  | KeyUnavailable -> Some 500
-  | LimitExceeded -> Some 400
-  | MalformedPolicyDocument -> Some 400
+  | KMSInternalException -> None
+  | KMSInvalidSignatureException -> None
+  | KMSInvalidStateException -> None
+  | KeyUnavailableException -> None
+  | LimitExceededException -> None
+  | MalformedPolicyDocumentException -> None
   | MalformedQueryString -> Some 404
   | MissingAction -> Some 400
   | MissingAuthenticationToken -> Some 403
   | MissingParameter -> Some 400
-  | NotFound -> Some 404
+  | NotFoundException -> None
   | OptInRequired -> Some 403
   | PendingVerification -> None
   | RequestExpired -> Some 400
   | RequestLimitExceeded -> None
   | ServiceUnavailable -> Some 503
+  | TagException -> None
   | Throttling -> Some 400
   | UnauthorizedOperation -> None
   | UnknownParameter -> None
-  | UnsupportedOperation -> Some 400
+  | UnsupportedOperationException -> None
   | UnsupportedProtocol -> None
   | ValidationError -> Some 400
   | Uninhabited -> None
 let to_string e =
   match e with
-  | AlreadyExists -> "AlreadyExists"
+  | AlreadyExistsException -> "AlreadyExistsException"
   | AuthFailure -> "AuthFailure"
   | Blocked -> "Blocked"
-  | DependencyTimeout -> "DependencyTimeout"
-  | Disabled -> "Disabled"
+  | CloudHsmClusterInUseException -> "CloudHsmClusterInUseException"
+  | CloudHsmClusterInvalidConfigurationException ->
+      "CloudHsmClusterInvalidConfigurationException"
+  | CloudHsmClusterNotActiveException -> "CloudHsmClusterNotActiveException"
+  | CloudHsmClusterNotFoundException -> "CloudHsmClusterNotFoundException"
+  | CloudHsmClusterNotRelatedException ->
+      "CloudHsmClusterNotRelatedException"
+  | CustomKeyStoreHasCMKsException -> "CustomKeyStoreHasCMKsException"
+  | CustomKeyStoreInvalidStateException ->
+      "CustomKeyStoreInvalidStateException"
+  | CustomKeyStoreNameInUseException -> "CustomKeyStoreNameInUseException"
+  | CustomKeyStoreNotFoundException -> "CustomKeyStoreNotFoundException"
+  | DependencyTimeoutException -> "DependencyTimeoutException"
+  | DisabledException -> "DisabledException"
   | DryRunOperation -> "DryRunOperation"
+  | ExpiredImportTokenException -> "ExpiredImportTokenException"
   | IdempotentParameterMismatch -> "IdempotentParameterMismatch"
   | IncompleteSignature -> "IncompleteSignature"
+  | IncorrectKeyException -> "IncorrectKeyException"
+  | IncorrectKeyMaterialException -> "IncorrectKeyMaterialException"
+  | IncorrectTrustAnchorException -> "IncorrectTrustAnchorException"
   | InternalFailure -> "InternalFailure"
   | InvalidAction -> "InvalidAction"
-  | InvalidAliasName -> "InvalidAliasName"
-  | InvalidArn -> "InvalidArn"
-  | InvalidCiphertext -> "InvalidCiphertext"
+  | InvalidAliasNameException -> "InvalidAliasNameException"
+  | InvalidArnException -> "InvalidArnException"
+  | InvalidCiphertextException -> "InvalidCiphertextException"
   | InvalidClientTokenId -> "InvalidClientTokenId"
-  | InvalidGrantToken -> "InvalidGrantToken"
-  | InvalidKeyUsage -> "InvalidKeyUsage"
-  | InvalidMarker -> "InvalidMarker"
+  | InvalidGrantIdException -> "InvalidGrantIdException"
+  | InvalidGrantTokenException -> "InvalidGrantTokenException"
+  | InvalidImportTokenException -> "InvalidImportTokenException"
+  | InvalidKeyUsageException -> "InvalidKeyUsageException"
+  | InvalidMarkerException -> "InvalidMarkerException"
   | InvalidParameter -> "InvalidParameter"
   | InvalidParameterCombination -> "InvalidParameterCombination"
   | InvalidParameterValue -> "InvalidParameterValue"
   | InvalidQueryParameter -> "InvalidQueryParameter"
-  | KMSInternal -> "KMSInternal"
-  | KeyUnavailable -> "KeyUnavailable"
-  | LimitExceeded -> "LimitExceeded"
-  | MalformedPolicyDocument -> "MalformedPolicyDocument"
+  | KMSInternalException -> "KMSInternalException"
+  | KMSInvalidSignatureException -> "KMSInvalidSignatureException"
+  | KMSInvalidStateException -> "KMSInvalidStateException"
+  | KeyUnavailableException -> "KeyUnavailableException"
+  | LimitExceededException -> "LimitExceededException"
+  | MalformedPolicyDocumentException -> "MalformedPolicyDocumentException"
   | MalformedQueryString -> "MalformedQueryString"
   | MissingAction -> "MissingAction"
   | MissingAuthenticationToken -> "MissingAuthenticationToken"
   | MissingParameter -> "MissingParameter"
-  | NotFound -> "NotFound"
+  | NotFoundException -> "NotFoundException"
   | OptInRequired -> "OptInRequired"
   | PendingVerification -> "PendingVerification"
   | RequestExpired -> "RequestExpired"
   | RequestLimitExceeded -> "RequestLimitExceeded"
   | ServiceUnavailable -> "ServiceUnavailable"
+  | TagException -> "TagException"
   | Throttling -> "Throttling"
   | UnauthorizedOperation -> "UnauthorizedOperation"
   | UnknownParameter -> "UnknownParameter"
-  | UnsupportedOperation -> "UnsupportedOperation"
+  | UnsupportedOperationException -> "UnsupportedOperationException"
   | UnsupportedProtocol -> "UnsupportedProtocol"
   | ValidationError -> "ValidationError"
   | Uninhabited -> "Uninhabited"
 let of_string e =
   match e with
-  | "AlreadyExists" -> Some AlreadyExists
+  | "AlreadyExistsException" -> Some AlreadyExistsException
   | "AuthFailure" -> Some AuthFailure
   | "Blocked" -> Some Blocked
-  | "DependencyTimeout" -> Some DependencyTimeout
-  | "Disabled" -> Some Disabled
+  | "CloudHsmClusterInUseException" -> Some CloudHsmClusterInUseException
+  | "CloudHsmClusterInvalidConfigurationException" ->
+      Some CloudHsmClusterInvalidConfigurationException
+  | "CloudHsmClusterNotActiveException" ->
+      Some CloudHsmClusterNotActiveException
+  | "CloudHsmClusterNotFoundException" ->
+      Some CloudHsmClusterNotFoundException
+  | "CloudHsmClusterNotRelatedException" ->
+      Some CloudHsmClusterNotRelatedException
+  | "CustomKeyStoreHasCMKsException" -> Some CustomKeyStoreHasCMKsException
+  | "CustomKeyStoreInvalidStateException" ->
+      Some CustomKeyStoreInvalidStateException
+  | "CustomKeyStoreNameInUseException" ->
+      Some CustomKeyStoreNameInUseException
+  | "CustomKeyStoreNotFoundException" -> Some CustomKeyStoreNotFoundException
+  | "DependencyTimeoutException" -> Some DependencyTimeoutException
+  | "DisabledException" -> Some DisabledException
   | "DryRunOperation" -> Some DryRunOperation
+  | "ExpiredImportTokenException" -> Some ExpiredImportTokenException
   | "IdempotentParameterMismatch" -> Some IdempotentParameterMismatch
   | "IncompleteSignature" -> Some IncompleteSignature
+  | "IncorrectKeyException" -> Some IncorrectKeyException
+  | "IncorrectKeyMaterialException" -> Some IncorrectKeyMaterialException
+  | "IncorrectTrustAnchorException" -> Some IncorrectTrustAnchorException
   | "InternalFailure" -> Some InternalFailure
   | "InvalidAction" -> Some InvalidAction
-  | "InvalidAliasName" -> Some InvalidAliasName
-  | "InvalidArn" -> Some InvalidArn
-  | "InvalidCiphertext" -> Some InvalidCiphertext
+  | "InvalidAliasNameException" -> Some InvalidAliasNameException
+  | "InvalidArnException" -> Some InvalidArnException
+  | "InvalidCiphertextException" -> Some InvalidCiphertextException
   | "InvalidClientTokenId" -> Some InvalidClientTokenId
-  | "InvalidGrantToken" -> Some InvalidGrantToken
-  | "InvalidKeyUsage" -> Some InvalidKeyUsage
-  | "InvalidMarker" -> Some InvalidMarker
+  | "InvalidGrantIdException" -> Some InvalidGrantIdException
+  | "InvalidGrantTokenException" -> Some InvalidGrantTokenException
+  | "InvalidImportTokenException" -> Some InvalidImportTokenException
+  | "InvalidKeyUsageException" -> Some InvalidKeyUsageException
+  | "InvalidMarkerException" -> Some InvalidMarkerException
   | "InvalidParameter" -> Some InvalidParameter
   | "InvalidParameterCombination" -> Some InvalidParameterCombination
   | "InvalidParameterValue" -> Some InvalidParameterValue
   | "InvalidQueryParameter" -> Some InvalidQueryParameter
-  | "KMSInternal" -> Some KMSInternal
-  | "KeyUnavailable" -> Some KeyUnavailable
-  | "LimitExceeded" -> Some LimitExceeded
-  | "MalformedPolicyDocument" -> Some MalformedPolicyDocument
+  | "KMSInternalException" -> Some KMSInternalException
+  | "KMSInvalidSignatureException" -> Some KMSInvalidSignatureException
+  | "KMSInvalidStateException" -> Some KMSInvalidStateException
+  | "KeyUnavailableException" -> Some KeyUnavailableException
+  | "LimitExceededException" -> Some LimitExceededException
+  | "MalformedPolicyDocumentException" ->
+      Some MalformedPolicyDocumentException
   | "MalformedQueryString" -> Some MalformedQueryString
   | "MissingAction" -> Some MissingAction
   | "MissingAuthenticationToken" -> Some MissingAuthenticationToken
   | "MissingParameter" -> Some MissingParameter
-  | "NotFound" -> Some NotFound
+  | "NotFoundException" -> Some NotFoundException
   | "OptInRequired" -> Some OptInRequired
   | "PendingVerification" -> Some PendingVerification
   | "RequestExpired" -> Some RequestExpired
   | "RequestLimitExceeded" -> Some RequestLimitExceeded
   | "ServiceUnavailable" -> Some ServiceUnavailable
+  | "TagException" -> Some TagException
   | "Throttling" -> Some Throttling
   | "UnauthorizedOperation" -> Some UnauthorizedOperation
   | "UnknownParameter" -> Some UnknownParameter
-  | "UnsupportedOperation" -> Some UnsupportedOperation
+  | "UnsupportedOperationException" -> Some UnsupportedOperationException
   | "UnsupportedProtocol" -> Some UnsupportedProtocol
   | "ValidationError" -> Some ValidationError
   | "Uninhabited" -> Some Uninhabited

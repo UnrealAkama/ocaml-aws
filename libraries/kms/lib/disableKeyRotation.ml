@@ -17,12 +17,7 @@ let to_http service region req =
   (`POST, uri, [])
 let of_http body = `Ok ()
 let parse_error code err =
-  let errors =
-    [Errors_internal.KMSInternal;
-    Errors_internal.DependencyTimeout;
-    Errors_internal.InvalidArn;
-    Errors_internal.Disabled;
-    Errors_internal.NotFound] @ Errors_internal.common in
+  let errors = [] @ Errors_internal.common in
   match Errors_internal.of_string err with
   | Some var ->
       if

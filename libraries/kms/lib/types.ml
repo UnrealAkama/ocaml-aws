@@ -27,11 +27,24 @@ module GrantOperation =
       | GenerateDataKeyWithoutPlaintext 
       | ReEncryptFrom 
       | ReEncryptTo 
+      | Sign 
+      | Verify 
+      | GetPublicKey 
       | CreateGrant 
       | RetireGrant 
+      | DescribeKey 
+      | GenerateDataKeyPair 
+      | GenerateDataKeyPairWithoutPlaintext 
     let str_to_t =
-      [("RetireGrant", RetireGrant);
+      [("GenerateDataKeyPairWithoutPlaintext",
+         GenerateDataKeyPairWithoutPlaintext);
+      ("GenerateDataKeyPair", GenerateDataKeyPair);
+      ("DescribeKey", DescribeKey);
+      ("RetireGrant", RetireGrant);
       ("CreateGrant", CreateGrant);
+      ("GetPublicKey", GetPublicKey);
+      ("Verify", Verify);
+      ("Sign", Sign);
       ("ReEncryptTo", ReEncryptTo);
       ("ReEncryptFrom", ReEncryptFrom);
       ("GenerateDataKeyWithoutPlaintext", GenerateDataKeyWithoutPlaintext);
@@ -39,14 +52,171 @@ module GrantOperation =
       ("Encrypt", Encrypt);
       ("Decrypt", Decrypt)]
     let t_to_str =
-      [(RetireGrant, "RetireGrant");
+      [(GenerateDataKeyPairWithoutPlaintext,
+         "GenerateDataKeyPairWithoutPlaintext");
+      (GenerateDataKeyPair, "GenerateDataKeyPair");
+      (DescribeKey, "DescribeKey");
+      (RetireGrant, "RetireGrant");
       (CreateGrant, "CreateGrant");
+      (GetPublicKey, "GetPublicKey");
+      (Verify, "Verify");
+      (Sign, "Sign");
       (ReEncryptTo, "ReEncryptTo");
       (ReEncryptFrom, "ReEncryptFrom");
       (GenerateDataKeyWithoutPlaintext, "GenerateDataKeyWithoutPlaintext");
       (GenerateDataKey, "GenerateDataKey");
       (Encrypt, "Encrypt");
       (Decrypt, "Decrypt")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module EncryptionAlgorithmSpec =
+  struct
+    type t =
+      | SYMMETRIC_DEFAULT 
+      | RSAES_OAEP_SHA_1 
+      | RSAES_OAEP_SHA_256 
+    let str_to_t =
+      [("RSAES_OAEP_SHA_256", RSAES_OAEP_SHA_256);
+      ("RSAES_OAEP_SHA_1", RSAES_OAEP_SHA_1);
+      ("SYMMETRIC_DEFAULT", SYMMETRIC_DEFAULT)]
+    let t_to_str =
+      [(RSAES_OAEP_SHA_256, "RSAES_OAEP_SHA_256");
+      (RSAES_OAEP_SHA_1, "RSAES_OAEP_SHA_1");
+      (SYMMETRIC_DEFAULT, "SYMMETRIC_DEFAULT")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module SigningAlgorithmSpec =
+  struct
+    type t =
+      | RSASSA_PSS_SHA_256 
+      | RSASSA_PSS_SHA_384 
+      | RSASSA_PSS_SHA_512 
+      | RSASSA_PKCS1_V1_5_SHA_256 
+      | RSASSA_PKCS1_V1_5_SHA_384 
+      | RSASSA_PKCS1_V1_5_SHA_512 
+      | ECDSA_SHA_256 
+      | ECDSA_SHA_384 
+      | ECDSA_SHA_512 
+    let str_to_t =
+      [("ECDSA_SHA_512", ECDSA_SHA_512);
+      ("ECDSA_SHA_384", ECDSA_SHA_384);
+      ("ECDSA_SHA_256", ECDSA_SHA_256);
+      ("RSASSA_PKCS1_V1_5_SHA_512", RSASSA_PKCS1_V1_5_SHA_512);
+      ("RSASSA_PKCS1_V1_5_SHA_384", RSASSA_PKCS1_V1_5_SHA_384);
+      ("RSASSA_PKCS1_V1_5_SHA_256", RSASSA_PKCS1_V1_5_SHA_256);
+      ("RSASSA_PSS_SHA_512", RSASSA_PSS_SHA_512);
+      ("RSASSA_PSS_SHA_384", RSASSA_PSS_SHA_384);
+      ("RSASSA_PSS_SHA_256", RSASSA_PSS_SHA_256)]
+    let t_to_str =
+      [(ECDSA_SHA_512, "ECDSA_SHA_512");
+      (ECDSA_SHA_384, "ECDSA_SHA_384");
+      (ECDSA_SHA_256, "ECDSA_SHA_256");
+      (RSASSA_PKCS1_V1_5_SHA_512, "RSASSA_PKCS1_V1_5_SHA_512");
+      (RSASSA_PKCS1_V1_5_SHA_384, "RSASSA_PKCS1_V1_5_SHA_384");
+      (RSASSA_PKCS1_V1_5_SHA_256, "RSASSA_PKCS1_V1_5_SHA_256");
+      (RSASSA_PSS_SHA_512, "RSASSA_PSS_SHA_512");
+      (RSASSA_PSS_SHA_384, "RSASSA_PSS_SHA_384");
+      (RSASSA_PSS_SHA_256, "RSASSA_PSS_SHA_256")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module ConnectionErrorCodeType =
+  struct
+    type t =
+      | INVALID_CREDENTIALS 
+      | CLUSTER_NOT_FOUND 
+      | NETWORK_ERRORS 
+      | INTERNAL_ERROR 
+      | INSUFFICIENT_CLOUDHSM_HSMS 
+      | USER_LOCKED_OUT 
+      | USER_NOT_FOUND 
+      | USER_LOGGED_IN 
+      | SUBNET_NOT_FOUND 
+    let str_to_t =
+      [("SUBNET_NOT_FOUND", SUBNET_NOT_FOUND);
+      ("USER_LOGGED_IN", USER_LOGGED_IN);
+      ("USER_NOT_FOUND", USER_NOT_FOUND);
+      ("USER_LOCKED_OUT", USER_LOCKED_OUT);
+      ("INSUFFICIENT_CLOUDHSM_HSMS", INSUFFICIENT_CLOUDHSM_HSMS);
+      ("INTERNAL_ERROR", INTERNAL_ERROR);
+      ("NETWORK_ERRORS", NETWORK_ERRORS);
+      ("CLUSTER_NOT_FOUND", CLUSTER_NOT_FOUND);
+      ("INVALID_CREDENTIALS", INVALID_CREDENTIALS)]
+    let t_to_str =
+      [(SUBNET_NOT_FOUND, "SUBNET_NOT_FOUND");
+      (USER_LOGGED_IN, "USER_LOGGED_IN");
+      (USER_NOT_FOUND, "USER_NOT_FOUND");
+      (USER_LOCKED_OUT, "USER_LOCKED_OUT");
+      (INSUFFICIENT_CLOUDHSM_HSMS, "INSUFFICIENT_CLOUDHSM_HSMS");
+      (INTERNAL_ERROR, "INTERNAL_ERROR");
+      (NETWORK_ERRORS, "NETWORK_ERRORS");
+      (CLUSTER_NOT_FOUND, "CLUSTER_NOT_FOUND");
+      (INVALID_CREDENTIALS, "INVALID_CREDENTIALS")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module ConnectionStateType =
+  struct
+    type t =
+      | CONNECTED 
+      | CONNECTING 
+      | FAILED 
+      | DISCONNECTED 
+      | DISCONNECTING 
+    let str_to_t =
+      [("DISCONNECTING", DISCONNECTING);
+      ("DISCONNECTED", DISCONNECTED);
+      ("FAILED", FAILED);
+      ("CONNECTING", CONNECTING);
+      ("CONNECTED", CONNECTED)]
+    let t_to_str =
+      [(DISCONNECTING, "DISCONNECTING");
+      (DISCONNECTED, "DISCONNECTED");
+      (FAILED, "FAILED");
+      (CONNECTING, "CONNECTING");
+      (CONNECTED, "CONNECTED")]
     let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
     let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
     let make v () = v
@@ -123,6 +293,40 @@ module GrantOperationList =
     let to_json v = `List (List.map GrantOperation.to_json v)
     let of_json j = Json.to_list GrantOperation.of_json j
   end
+module Tag =
+  struct
+    type t = {
+      tag_key: String.t ;
+      tag_value: String.t }
+    let make ~tag_key  ~tag_value  () = { tag_key; tag_value }
+    let parse xml =
+      Some
+        {
+          tag_key =
+            (Xml.required "TagKey"
+               (Util.option_bind (Xml.member "TagKey" xml) String.parse));
+          tag_value =
+            (Xml.required "TagValue"
+               (Util.option_bind (Xml.member "TagValue" xml) String.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some (Query.Pair ("TagValue", (String.to_query v.tag_value)));
+           Some (Query.Pair ("TagKey", (String.to_query v.tag_key)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some ("tag_value", (String.to_json v.tag_value));
+           Some ("tag_key", (String.to_json v.tag_key))])
+    let of_json j =
+      {
+        tag_key =
+          (String.of_json (Util.of_option_exn (Json.lookup j "tag_key")));
+        tag_value =
+          (String.of_json (Util.of_option_exn (Json.lookup j "tag_value")))
+      }
+  end
 module KeyListEntry =
   struct
     type t = {
@@ -154,12 +358,35 @@ module KeyListEntry =
         key_arn = (Util.option_map (Json.lookup j "key_arn") String.of_json)
       }
   end
-module KeyUsageType =
+module CustomerMasterKeySpec =
   struct
     type t =
-      | ENCRYPT_DECRYPT 
-    let str_to_t = [("ENCRYPT_DECRYPT", ENCRYPT_DECRYPT)]
-    let t_to_str = [(ENCRYPT_DECRYPT, "ENCRYPT_DECRYPT")]
+      | RSA_2048 
+      | RSA_3072 
+      | RSA_4096 
+      | ECC_NIST_P256 
+      | ECC_NIST_P384 
+      | ECC_NIST_P521 
+      | ECC_SECG_P256K1 
+      | SYMMETRIC_DEFAULT 
+    let str_to_t =
+      [("SYMMETRIC_DEFAULT", SYMMETRIC_DEFAULT);
+      ("ECC_SECG_P256K1", ECC_SECG_P256K1);
+      ("ECC_NIST_P521", ECC_NIST_P521);
+      ("ECC_NIST_P384", ECC_NIST_P384);
+      ("ECC_NIST_P256", ECC_NIST_P256);
+      ("RSA_4096", RSA_4096);
+      ("RSA_3072", RSA_3072);
+      ("RSA_2048", RSA_2048)]
+    let t_to_str =
+      [(SYMMETRIC_DEFAULT, "SYMMETRIC_DEFAULT");
+      (ECC_SECG_P256K1, "ECC_SECG_P256K1");
+      (ECC_NIST_P521, "ECC_NIST_P521");
+      (ECC_NIST_P384, "ECC_NIST_P384");
+      (ECC_NIST_P256, "ECC_NIST_P256");
+      (RSA_4096, "RSA_4096");
+      (RSA_3072, "RSA_3072");
+      (RSA_2048, "RSA_2048")]
     let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
     let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
     let make v () = v
@@ -173,20 +400,288 @@ module KeyUsageType =
     let of_json j =
       Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
   end
+module EncryptionAlgorithmSpecList =
+  struct
+    type t = EncryptionAlgorithmSpec.t list
+    let make elems () = elems
+    let parse xml =
+      Util.option_all
+        (List.map EncryptionAlgorithmSpec.parse (Xml.members "member" xml))
+    let to_query v = Query.to_query_list EncryptionAlgorithmSpec.to_query v
+    let to_json v = `List (List.map EncryptionAlgorithmSpec.to_json v)
+    let of_json j = Json.to_list EncryptionAlgorithmSpec.of_json j
+  end
+module ExpirationModelType =
+  struct
+    type t =
+      | KEY_MATERIAL_EXPIRES 
+      | KEY_MATERIAL_DOES_NOT_EXPIRE 
+    let str_to_t =
+      [("KEY_MATERIAL_DOES_NOT_EXPIRE", KEY_MATERIAL_DOES_NOT_EXPIRE);
+      ("KEY_MATERIAL_EXPIRES", KEY_MATERIAL_EXPIRES)]
+    let t_to_str =
+      [(KEY_MATERIAL_DOES_NOT_EXPIRE, "KEY_MATERIAL_DOES_NOT_EXPIRE");
+      (KEY_MATERIAL_EXPIRES, "KEY_MATERIAL_EXPIRES")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module KeyManagerType =
+  struct
+    type t =
+      | AWS 
+      | CUSTOMER 
+    let str_to_t = [("CUSTOMER", CUSTOMER); ("AWS", AWS)]
+    let t_to_str = [(CUSTOMER, "CUSTOMER"); (AWS, "AWS")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module KeyState =
+  struct
+    type t =
+      | Enabled 
+      | Disabled 
+      | PendingDeletion 
+      | PendingImport 
+      | Unavailable 
+    let str_to_t =
+      [("Unavailable", Unavailable);
+      ("PendingImport", PendingImport);
+      ("PendingDeletion", PendingDeletion);
+      ("Disabled", Disabled);
+      ("Enabled", Enabled)]
+    let t_to_str =
+      [(Unavailable, "Unavailable");
+      (PendingImport, "PendingImport");
+      (PendingDeletion, "PendingDeletion");
+      (Disabled, "Disabled");
+      (Enabled, "Enabled")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module KeyUsageType =
+  struct
+    type t =
+      | SIGN_VERIFY 
+      | ENCRYPT_DECRYPT 
+    let str_to_t =
+      [("ENCRYPT_DECRYPT", ENCRYPT_DECRYPT); ("SIGN_VERIFY", SIGN_VERIFY)]
+    let t_to_str =
+      [(ENCRYPT_DECRYPT, "ENCRYPT_DECRYPT"); (SIGN_VERIFY, "SIGN_VERIFY")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module OriginType =
+  struct
+    type t =
+      | AWS_KMS 
+      | EXTERNAL 
+      | AWS_CLOUDHSM 
+    let str_to_t =
+      [("AWS_CLOUDHSM", AWS_CLOUDHSM);
+      ("EXTERNAL", EXTERNAL);
+      ("AWS_KMS", AWS_KMS)]
+    let t_to_str =
+      [(AWS_CLOUDHSM, "AWS_CLOUDHSM");
+      (EXTERNAL, "EXTERNAL");
+      (AWS_KMS, "AWS_KMS")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module SigningAlgorithmSpecList =
+  struct
+    type t = SigningAlgorithmSpec.t list
+    let make elems () = elems
+    let parse xml =
+      Util.option_all
+        (List.map SigningAlgorithmSpec.parse (Xml.members "member" xml))
+    let to_query v = Query.to_query_list SigningAlgorithmSpec.to_query v
+    let to_json v = `List (List.map SigningAlgorithmSpec.to_json v)
+    let of_json j = Json.to_list SigningAlgorithmSpec.of_json j
+  end
+module CustomKeyStoresListEntry =
+  struct
+    type t =
+      {
+      custom_key_store_id: String.t option ;
+      custom_key_store_name: String.t option ;
+      cloud_hsm_cluster_id: String.t option ;
+      trust_anchor_certificate: String.t option ;
+      connection_state: ConnectionStateType.t option ;
+      connection_error_code: ConnectionErrorCodeType.t option ;
+      creation_date: DateTime.t option }
+    let make ?custom_key_store_id  ?custom_key_store_name 
+      ?cloud_hsm_cluster_id  ?trust_anchor_certificate  ?connection_state 
+      ?connection_error_code  ?creation_date  () =
+      {
+        custom_key_store_id;
+        custom_key_store_name;
+        cloud_hsm_cluster_id;
+        trust_anchor_certificate;
+        connection_state;
+        connection_error_code;
+        creation_date
+      }
+    let parse xml =
+      Some
+        {
+          custom_key_store_id =
+            (Util.option_bind (Xml.member "CustomKeyStoreId" xml)
+               String.parse);
+          custom_key_store_name =
+            (Util.option_bind (Xml.member "CustomKeyStoreName" xml)
+               String.parse);
+          cloud_hsm_cluster_id =
+            (Util.option_bind (Xml.member "CloudHsmClusterId" xml)
+               String.parse);
+          trust_anchor_certificate =
+            (Util.option_bind (Xml.member "TrustAnchorCertificate" xml)
+               String.parse);
+          connection_state =
+            (Util.option_bind (Xml.member "ConnectionState" xml)
+               ConnectionStateType.parse);
+          connection_error_code =
+            (Util.option_bind (Xml.member "ConnectionErrorCode" xml)
+               ConnectionErrorCodeType.parse);
+          creation_date =
+            (Util.option_bind (Xml.member "CreationDate" xml) DateTime.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.creation_date
+              (fun f -> Query.Pair ("CreationDate", (DateTime.to_query f)));
+           Util.option_map v.connection_error_code
+             (fun f ->
+                Query.Pair
+                  ("ConnectionErrorCode",
+                    (ConnectionErrorCodeType.to_query f)));
+           Util.option_map v.connection_state
+             (fun f ->
+                Query.Pair
+                  ("ConnectionState", (ConnectionStateType.to_query f)));
+           Util.option_map v.trust_anchor_certificate
+             (fun f ->
+                Query.Pair ("TrustAnchorCertificate", (String.to_query f)));
+           Util.option_map v.cloud_hsm_cluster_id
+             (fun f -> Query.Pair ("CloudHsmClusterId", (String.to_query f)));
+           Util.option_map v.custom_key_store_name
+             (fun f -> Query.Pair ("CustomKeyStoreName", (String.to_query f)));
+           Util.option_map v.custom_key_store_id
+             (fun f -> Query.Pair ("CustomKeyStoreId", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.creation_date
+              (fun f -> ("creation_date", (DateTime.to_json f)));
+           Util.option_map v.connection_error_code
+             (fun f ->
+                ("connection_error_code",
+                  (ConnectionErrorCodeType.to_json f)));
+           Util.option_map v.connection_state
+             (fun f -> ("connection_state", (ConnectionStateType.to_json f)));
+           Util.option_map v.trust_anchor_certificate
+             (fun f -> ("trust_anchor_certificate", (String.to_json f)));
+           Util.option_map v.cloud_hsm_cluster_id
+             (fun f -> ("cloud_hsm_cluster_id", (String.to_json f)));
+           Util.option_map v.custom_key_store_name
+             (fun f -> ("custom_key_store_name", (String.to_json f)));
+           Util.option_map v.custom_key_store_id
+             (fun f -> ("custom_key_store_id", (String.to_json f)))])
+    let of_json j =
+      {
+        custom_key_store_id =
+          (Util.option_map (Json.lookup j "custom_key_store_id")
+             String.of_json);
+        custom_key_store_name =
+          (Util.option_map (Json.lookup j "custom_key_store_name")
+             String.of_json);
+        cloud_hsm_cluster_id =
+          (Util.option_map (Json.lookup j "cloud_hsm_cluster_id")
+             String.of_json);
+        trust_anchor_certificate =
+          (Util.option_map (Json.lookup j "trust_anchor_certificate")
+             String.of_json);
+        connection_state =
+          (Util.option_map (Json.lookup j "connection_state")
+             ConnectionStateType.of_json);
+        connection_error_code =
+          (Util.option_map (Json.lookup j "connection_error_code")
+             ConnectionErrorCodeType.of_json);
+        creation_date =
+          (Util.option_map (Json.lookup j "creation_date") DateTime.of_json)
+      }
+  end
 module GrantListEntry =
   struct
     type t =
       {
+      key_id: String.t option ;
       grant_id: String.t option ;
+      name: String.t option ;
+      creation_date: DateTime.t option ;
       grantee_principal: String.t option ;
       retiring_principal: String.t option ;
       issuing_account: String.t option ;
       operations: GrantOperationList.t ;
       constraints: GrantConstraints.t option }
-    let make ?grant_id  ?grantee_principal  ?retiring_principal 
-      ?issuing_account  ?(operations= [])  ?constraints  () =
+    let make ?key_id  ?grant_id  ?name  ?creation_date  ?grantee_principal 
+      ?retiring_principal  ?issuing_account  ?(operations= [])  ?constraints 
+      () =
       {
+        key_id;
         grant_id;
+        name;
+        creation_date;
         grantee_principal;
         retiring_principal;
         issuing_account;
@@ -196,8 +691,12 @@ module GrantListEntry =
     let parse xml =
       Some
         {
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
           grant_id =
             (Util.option_bind (Xml.member "GrantId" xml) String.parse);
+          name = (Util.option_bind (Xml.member "Name" xml) String.parse);
+          creation_date =
+            (Util.option_bind (Xml.member "CreationDate" xml) DateTime.parse);
           grantee_principal =
             (Util.option_bind (Xml.member "GranteePrincipal" xml)
                String.parse);
@@ -230,8 +729,14 @@ module GrantListEntry =
              (fun f -> Query.Pair ("RetiringPrincipal", (String.to_query f)));
            Util.option_map v.grantee_principal
              (fun f -> Query.Pair ("GranteePrincipal", (String.to_query f)));
+           Util.option_map v.creation_date
+             (fun f -> Query.Pair ("CreationDate", (DateTime.to_query f)));
+           Util.option_map v.name
+             (fun f -> Query.Pair ("Name", (String.to_query f)));
            Util.option_map v.grant_id
-             (fun f -> Query.Pair ("GrantId", (String.to_query f)))])
+             (fun f -> Query.Pair ("GrantId", (String.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)))])
     let to_json v =
       `Assoc
         (Util.list_filter_opt
@@ -244,12 +749,20 @@ module GrantListEntry =
              (fun f -> ("retiring_principal", (String.to_json f)));
            Util.option_map v.grantee_principal
              (fun f -> ("grantee_principal", (String.to_json f)));
+           Util.option_map v.creation_date
+             (fun f -> ("creation_date", (DateTime.to_json f)));
+           Util.option_map v.name (fun f -> ("name", (String.to_json f)));
            Util.option_map v.grant_id
-             (fun f -> ("grant_id", (String.to_json f)))])
+             (fun f -> ("grant_id", (String.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)))])
     let of_json j =
       {
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
         grant_id =
           (Util.option_map (Json.lookup j "grant_id") String.of_json);
+        name = (Util.option_map (Json.lookup j "name") String.of_json);
+        creation_date =
+          (Util.option_map (Json.lookup j "creation_date") DateTime.of_json);
         grantee_principal =
           (Util.option_map (Json.lookup j "grantee_principal") String.of_json);
         retiring_principal =
@@ -312,6 +825,62 @@ module AliasListEntry =
           (Util.option_map (Json.lookup j "target_key_id") String.of_json)
       }
   end
+module TagList =
+  struct
+    type t = Tag.t list
+    let make elems () = elems
+    let parse xml =
+      Util.option_all (List.map Tag.parse (Xml.members "member" xml))
+    let to_query v = Query.to_query_list Tag.to_query v
+    let to_json v = `List (List.map Tag.to_json v)
+    let of_json j = Json.to_list Tag.of_json j
+  end
+module AlgorithmSpec =
+  struct
+    type t =
+      | RSAES_PKCS1_V1_5 
+      | RSAES_OAEP_SHA_1 
+      | RSAES_OAEP_SHA_256 
+    let str_to_t =
+      [("RSAES_OAEP_SHA_256", RSAES_OAEP_SHA_256);
+      ("RSAES_OAEP_SHA_1", RSAES_OAEP_SHA_1);
+      ("RSAES_PKCS1_V1_5", RSAES_PKCS1_V1_5)]
+    let t_to_str =
+      [(RSAES_OAEP_SHA_256, "RSAES_OAEP_SHA_256");
+      (RSAES_OAEP_SHA_1, "RSAES_OAEP_SHA_1");
+      (RSAES_PKCS1_V1_5, "RSAES_PKCS1_V1_5")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module WrappingKeySpec =
+  struct
+    type t =
+      | RSA_2048 
+    let str_to_t = [("RSA_2048", RSA_2048)]
+    let t_to_str = [(RSA_2048, "RSA_2048")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
 module KeyList =
   struct
     type t = KeyListEntry.t list
@@ -323,6 +892,36 @@ module KeyList =
     let to_json v = `List (List.map KeyListEntry.to_json v)
     let of_json j = Json.to_list KeyListEntry.of_json j
   end
+module GrantTokenList =
+  struct
+    type t = String.t list
+    let make elems () = elems
+    let parse xml =
+      Util.option_all (List.map String.parse (Xml.members "member" xml))
+    let to_query v = Query.to_query_list String.to_query v
+    let to_json v = `List (List.map String.to_json v)
+    let of_json j = Json.to_list String.of_json j
+  end
+module MessageType =
+  struct
+    type t =
+      | RAW 
+      | DIGEST 
+    let str_to_t = [("DIGEST", DIGEST); ("RAW", RAW)]
+    let t_to_str = [(DIGEST, "DIGEST"); (RAW, "RAW")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
 module KeyMetadata =
   struct
     type t =
@@ -333,9 +932,23 @@ module KeyMetadata =
       creation_date: DateTime.t option ;
       enabled: Boolean.t option ;
       description: String.t option ;
-      key_usage: KeyUsageType.t option }
+      key_usage: KeyUsageType.t option ;
+      key_state: KeyState.t option ;
+      deletion_date: DateTime.t option ;
+      valid_to: DateTime.t option ;
+      origin: OriginType.t option ;
+      custom_key_store_id: String.t option ;
+      cloud_hsm_cluster_id: String.t option ;
+      expiration_model: ExpirationModelType.t option ;
+      key_manager: KeyManagerType.t option ;
+      customer_master_key_spec: CustomerMasterKeySpec.t option ;
+      encryption_algorithms: EncryptionAlgorithmSpecList.t ;
+      signing_algorithms: SigningAlgorithmSpecList.t }
     let make ?a_w_s_account_id  ~key_id  ?arn  ?creation_date  ?enabled 
-      ?description  ?key_usage  () =
+      ?description  ?key_usage  ?key_state  ?deletion_date  ?valid_to 
+      ?origin  ?custom_key_store_id  ?cloud_hsm_cluster_id  ?expiration_model
+       ?key_manager  ?customer_master_key_spec  ?(encryption_algorithms= []) 
+      ?(signing_algorithms= [])  () =
       {
         a_w_s_account_id;
         key_id;
@@ -343,7 +956,18 @@ module KeyMetadata =
         creation_date;
         enabled;
         description;
-        key_usage
+        key_usage;
+        key_state;
+        deletion_date;
+        valid_to;
+        origin;
+        custom_key_store_id;
+        cloud_hsm_cluster_id;
+        expiration_model;
+        key_manager;
+        customer_master_key_spec;
+        encryption_algorithms;
+        signing_algorithms
       }
     let parse xml =
       Some
@@ -361,13 +985,76 @@ module KeyMetadata =
           description =
             (Util.option_bind (Xml.member "Description" xml) String.parse);
           key_usage =
-            (Util.option_bind (Xml.member "KeyUsage" xml) KeyUsageType.parse)
+            (Util.option_bind (Xml.member "KeyUsage" xml) KeyUsageType.parse);
+          key_state =
+            (Util.option_bind (Xml.member "KeyState" xml) KeyState.parse);
+          deletion_date =
+            (Util.option_bind (Xml.member "DeletionDate" xml) DateTime.parse);
+          valid_to =
+            (Util.option_bind (Xml.member "ValidTo" xml) DateTime.parse);
+          origin =
+            (Util.option_bind (Xml.member "Origin" xml) OriginType.parse);
+          custom_key_store_id =
+            (Util.option_bind (Xml.member "CustomKeyStoreId" xml)
+               String.parse);
+          cloud_hsm_cluster_id =
+            (Util.option_bind (Xml.member "CloudHsmClusterId" xml)
+               String.parse);
+          expiration_model =
+            (Util.option_bind (Xml.member "ExpirationModel" xml)
+               ExpirationModelType.parse);
+          key_manager =
+            (Util.option_bind (Xml.member "KeyManager" xml)
+               KeyManagerType.parse);
+          customer_master_key_spec =
+            (Util.option_bind (Xml.member "CustomerMasterKeySpec" xml)
+               CustomerMasterKeySpec.parse);
+          encryption_algorithms =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "EncryptionAlgorithms" xml)
+                  EncryptionAlgorithmSpecList.parse));
+          signing_algorithms =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "SigningAlgorithms" xml)
+                  SigningAlgorithmSpecList.parse))
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Util.option_map v.key_usage
-              (fun f -> Query.Pair ("KeyUsage", (KeyUsageType.to_query f)));
+           [Some
+              (Query.Pair
+                 ("SigningAlgorithms.member",
+                   (SigningAlgorithmSpecList.to_query v.signing_algorithms)));
+           Some
+             (Query.Pair
+                ("EncryptionAlgorithms.member",
+                  (EncryptionAlgorithmSpecList.to_query
+                     v.encryption_algorithms)));
+           Util.option_map v.customer_master_key_spec
+             (fun f ->
+                Query.Pair
+                  ("CustomerMasterKeySpec",
+                    (CustomerMasterKeySpec.to_query f)));
+           Util.option_map v.key_manager
+             (fun f -> Query.Pair ("KeyManager", (KeyManagerType.to_query f)));
+           Util.option_map v.expiration_model
+             (fun f ->
+                Query.Pair
+                  ("ExpirationModel", (ExpirationModelType.to_query f)));
+           Util.option_map v.cloud_hsm_cluster_id
+             (fun f -> Query.Pair ("CloudHsmClusterId", (String.to_query f)));
+           Util.option_map v.custom_key_store_id
+             (fun f -> Query.Pair ("CustomKeyStoreId", (String.to_query f)));
+           Util.option_map v.origin
+             (fun f -> Query.Pair ("Origin", (OriginType.to_query f)));
+           Util.option_map v.valid_to
+             (fun f -> Query.Pair ("ValidTo", (DateTime.to_query f)));
+           Util.option_map v.deletion_date
+             (fun f -> Query.Pair ("DeletionDate", (DateTime.to_query f)));
+           Util.option_map v.key_state
+             (fun f -> Query.Pair ("KeyState", (KeyState.to_query f)));
+           Util.option_map v.key_usage
+             (fun f -> Query.Pair ("KeyUsage", (KeyUsageType.to_query f)));
            Util.option_map v.description
              (fun f -> Query.Pair ("Description", (String.to_query f)));
            Util.option_map v.enabled
@@ -382,8 +1069,34 @@ module KeyMetadata =
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Util.option_map v.key_usage
-              (fun f -> ("key_usage", (KeyUsageType.to_json f)));
+           [Some
+              ("signing_algorithms",
+                (SigningAlgorithmSpecList.to_json v.signing_algorithms));
+           Some
+             ("encryption_algorithms",
+               (EncryptionAlgorithmSpecList.to_json v.encryption_algorithms));
+           Util.option_map v.customer_master_key_spec
+             (fun f ->
+                ("customer_master_key_spec",
+                  (CustomerMasterKeySpec.to_json f)));
+           Util.option_map v.key_manager
+             (fun f -> ("key_manager", (KeyManagerType.to_json f)));
+           Util.option_map v.expiration_model
+             (fun f -> ("expiration_model", (ExpirationModelType.to_json f)));
+           Util.option_map v.cloud_hsm_cluster_id
+             (fun f -> ("cloud_hsm_cluster_id", (String.to_json f)));
+           Util.option_map v.custom_key_store_id
+             (fun f -> ("custom_key_store_id", (String.to_json f)));
+           Util.option_map v.origin
+             (fun f -> ("origin", (OriginType.to_json f)));
+           Util.option_map v.valid_to
+             (fun f -> ("valid_to", (DateTime.to_json f)));
+           Util.option_map v.deletion_date
+             (fun f -> ("deletion_date", (DateTime.to_json f)));
+           Util.option_map v.key_state
+             (fun f -> ("key_state", (KeyState.to_json f)));
+           Util.option_map v.key_usage
+             (fun f -> ("key_usage", (KeyUsageType.to_json f)));
            Util.option_map v.description
              (fun f -> ("description", (String.to_json f)));
            Util.option_map v.enabled
@@ -407,18 +1120,37 @@ module KeyMetadata =
         description =
           (Util.option_map (Json.lookup j "description") String.of_json);
         key_usage =
-          (Util.option_map (Json.lookup j "key_usage") KeyUsageType.of_json)
+          (Util.option_map (Json.lookup j "key_usage") KeyUsageType.of_json);
+        key_state =
+          (Util.option_map (Json.lookup j "key_state") KeyState.of_json);
+        deletion_date =
+          (Util.option_map (Json.lookup j "deletion_date") DateTime.of_json);
+        valid_to =
+          (Util.option_map (Json.lookup j "valid_to") DateTime.of_json);
+        origin =
+          (Util.option_map (Json.lookup j "origin") OriginType.of_json);
+        custom_key_store_id =
+          (Util.option_map (Json.lookup j "custom_key_store_id")
+             String.of_json);
+        cloud_hsm_cluster_id =
+          (Util.option_map (Json.lookup j "cloud_hsm_cluster_id")
+             String.of_json);
+        expiration_model =
+          (Util.option_map (Json.lookup j "expiration_model")
+             ExpirationModelType.of_json);
+        key_manager =
+          (Util.option_map (Json.lookup j "key_manager")
+             KeyManagerType.of_json);
+        customer_master_key_spec =
+          (Util.option_map (Json.lookup j "customer_master_key_spec")
+             CustomerMasterKeySpec.of_json);
+        encryption_algorithms =
+          (EncryptionAlgorithmSpecList.of_json
+             (Util.of_option_exn (Json.lookup j "encryption_algorithms")));
+        signing_algorithms =
+          (SigningAlgorithmSpecList.of_json
+             (Util.of_option_exn (Json.lookup j "signing_algorithms")))
       }
-  end
-module GrantTokenList =
-  struct
-    type t = String.t list
-    let make elems () = elems
-    let parse xml =
-      Util.option_all (List.map String.parse (Xml.members "member" xml))
-    let to_query v = Query.to_query_list String.to_query v
-    let to_json v = `List (List.map String.to_json v)
-    let of_json j = Json.to_list String.of_json j
   end
 module DataKeySpec =
   struct
@@ -427,6 +1159,56 @@ module DataKeySpec =
       | AES_128 
     let str_to_t = [("AES_128", AES_128); ("AES_256", AES_256)]
     let t_to_str = [(AES_128, "AES_128"); (AES_256, "AES_256")]
+    let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
+    let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
+    let make v () = v
+    let parse xml =
+      Util.option_bind (String.parse xml)
+        (fun s -> Util.list_find str_to_t s)
+    let to_query v =
+      Query.Value (Some (Util.of_option_exn (Util.list_find t_to_str v)))
+    let to_json v =
+      String.to_json (Util.of_option_exn (Util.list_find t_to_str v))
+    let of_json j =
+      Util.of_option_exn (Util.list_find str_to_t (String.of_json j))
+  end
+module CustomKeyStoresList =
+  struct
+    type t = CustomKeyStoresListEntry.t list
+    let make elems () = elems
+    let parse xml =
+      Util.option_all
+        (List.map CustomKeyStoresListEntry.parse (Xml.members "member" xml))
+    let to_query v = Query.to_query_list CustomKeyStoresListEntry.to_query v
+    let to_json v = `List (List.map CustomKeyStoresListEntry.to_json v)
+    let of_json j = Json.to_list CustomKeyStoresListEntry.of_json j
+  end
+module DataKeyPairSpec =
+  struct
+    type t =
+      | RSA_2048 
+      | RSA_3072 
+      | RSA_4096 
+      | ECC_NIST_P256 
+      | ECC_NIST_P384 
+      | ECC_NIST_P521 
+      | ECC_SECG_P256K1 
+    let str_to_t =
+      [("ECC_SECG_P256K1", ECC_SECG_P256K1);
+      ("ECC_NIST_P521", ECC_NIST_P521);
+      ("ECC_NIST_P384", ECC_NIST_P384);
+      ("ECC_NIST_P256", ECC_NIST_P256);
+      ("RSA_4096", RSA_4096);
+      ("RSA_3072", RSA_3072);
+      ("RSA_2048", RSA_2048)]
+    let t_to_str =
+      [(ECC_SECG_P256K1, "ECC_SECG_P256K1");
+      (ECC_NIST_P521, "ECC_NIST_P521");
+      (ECC_NIST_P384, "ECC_NIST_P384");
+      (ECC_NIST_P256, "ECC_NIST_P256");
+      (RSA_4096, "RSA_4096");
+      (RSA_3072, "RSA_3072");
+      (RSA_2048, "RSA_2048")]
     let to_string e = Util.of_option_exn (Util.list_find t_to_str e)
     let of_string s = Util.of_option_exn (Util.list_find str_to_t s)
     let make v () = v
@@ -471,6 +1253,299 @@ module AliasList =
     let to_query v = Query.to_query_list AliasListEntry.to_query v
     let to_json v = `List (List.map AliasListEntry.to_json v)
     let of_json j = Json.to_list AliasListEntry.of_json j
+  end
+module TagKeyList =
+  struct
+    type t = String.t list
+    let make elems () = elems
+    let parse xml =
+      Util.option_all (List.map String.parse (Xml.members "member" xml))
+    let to_query v = Query.to_query_list String.to_query v
+    let to_json v = `List (List.map String.to_json v)
+    let of_json j = Json.to_list String.of_json j
+  end
+module InvalidImportTokenException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module UpdateCustomKeyStoreResponse =
+  struct
+    type t = unit
+    let make () = ()
+    let parse xml = Some ()
+    let to_query v = Query.List (Util.list_filter_opt [])
+    let to_json v = `Assoc (Util.list_filter_opt [])
+    let of_json j = ()
+  end
+module DescribeCustomKeyStoresRequest =
+  struct
+    type t =
+      {
+      custom_key_store_id: String.t option ;
+      custom_key_store_name: String.t option ;
+      limit: Integer.t option ;
+      marker: String.t option }
+    let make ?custom_key_store_id  ?custom_key_store_name  ?limit  ?marker 
+      () = { custom_key_store_id; custom_key_store_name; limit; marker }
+    let parse xml =
+      Some
+        {
+          custom_key_store_id =
+            (Util.option_bind (Xml.member "CustomKeyStoreId" xml)
+               String.parse);
+          custom_key_store_name =
+            (Util.option_bind (Xml.member "CustomKeyStoreName" xml)
+               String.parse);
+          limit = (Util.option_bind (Xml.member "Limit" xml) Integer.parse);
+          marker = (Util.option_bind (Xml.member "Marker" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.marker
+              (fun f -> Query.Pair ("Marker", (String.to_query f)));
+           Util.option_map v.limit
+             (fun f -> Query.Pair ("Limit", (Integer.to_query f)));
+           Util.option_map v.custom_key_store_name
+             (fun f -> Query.Pair ("CustomKeyStoreName", (String.to_query f)));
+           Util.option_map v.custom_key_store_id
+             (fun f -> Query.Pair ("CustomKeyStoreId", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.marker
+              (fun f -> ("marker", (String.to_json f)));
+           Util.option_map v.limit (fun f -> ("limit", (Integer.to_json f)));
+           Util.option_map v.custom_key_store_name
+             (fun f -> ("custom_key_store_name", (String.to_json f)));
+           Util.option_map v.custom_key_store_id
+             (fun f -> ("custom_key_store_id", (String.to_json f)))])
+    let of_json j =
+      {
+        custom_key_store_id =
+          (Util.option_map (Json.lookup j "custom_key_store_id")
+             String.of_json);
+        custom_key_store_name =
+          (Util.option_map (Json.lookup j "custom_key_store_name")
+             String.of_json);
+        limit = (Util.option_map (Json.lookup j "limit") Integer.of_json);
+        marker = (Util.option_map (Json.lookup j "marker") String.of_json)
+      }
+  end
+module ConnectCustomKeyStoreRequest =
+  struct
+    type t = {
+      custom_key_store_id: String.t }
+    let make ~custom_key_store_id  () = { custom_key_store_id }
+    let parse xml =
+      Some
+        {
+          custom_key_store_id =
+            (Xml.required "CustomKeyStoreId"
+               (Util.option_bind (Xml.member "CustomKeyStoreId" xml)
+                  String.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("CustomKeyStoreId",
+                   (String.to_query v.custom_key_store_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some
+              ("custom_key_store_id", (String.to_json v.custom_key_store_id))])
+    let of_json j =
+      {
+        custom_key_store_id =
+          (String.of_json
+             (Util.of_option_exn (Json.lookup j "custom_key_store_id")))
+      }
+  end
+module ListResourceTagsResponse =
+  struct
+    type t =
+      {
+      tags: TagList.t ;
+      next_marker: String.t option ;
+      truncated: Boolean.t option }
+    let make ?(tags= [])  ?next_marker  ?truncated  () =
+      { tags; next_marker; truncated }
+    let parse xml =
+      Some
+        {
+          tags =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "Tags" xml) TagList.parse));
+          next_marker =
+            (Util.option_bind (Xml.member "NextMarker" xml) String.parse);
+          truncated =
+            (Util.option_bind (Xml.member "Truncated" xml) Boolean.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.truncated
+              (fun f -> Query.Pair ("Truncated", (Boolean.to_query f)));
+           Util.option_map v.next_marker
+             (fun f -> Query.Pair ("NextMarker", (String.to_query f)));
+           Some (Query.Pair ("Tags.member", (TagList.to_query v.tags)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.truncated
+              (fun f -> ("truncated", (Boolean.to_json f)));
+           Util.option_map v.next_marker
+             (fun f -> ("next_marker", (String.to_json f)));
+           Some ("tags", (TagList.to_json v.tags))])
+    let of_json j =
+      {
+        tags = (TagList.of_json (Util.of_option_exn (Json.lookup j "tags")));
+        next_marker =
+          (Util.option_map (Json.lookup j "next_marker") String.of_json);
+        truncated =
+          (Util.option_map (Json.lookup j "truncated") Boolean.of_json)
+      }
+  end
+module CloudHsmClusterInUseException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module CustomKeyStoreHasCMKsException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module DisconnectCustomKeyStoreResponse =
+  struct
+    type t = unit
+    let make () = ()
+    let parse xml = Some ()
+    let to_query v = Query.List (Util.list_filter_opt [])
+    let to_json v = `Assoc (Util.list_filter_opt [])
+    let of_json j = ()
+  end
+module GetParametersForImportRequest =
+  struct
+    type t =
+      {
+      key_id: String.t ;
+      wrapping_algorithm: AlgorithmSpec.t ;
+      wrapping_key_spec: WrappingKeySpec.t }
+    let make ~key_id  ~wrapping_algorithm  ~wrapping_key_spec  () =
+      { key_id; wrapping_algorithm; wrapping_key_spec }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          wrapping_algorithm =
+            (Xml.required "WrappingAlgorithm"
+               (Util.option_bind (Xml.member "WrappingAlgorithm" xml)
+                  AlgorithmSpec.parse));
+          wrapping_key_spec =
+            (Xml.required "WrappingKeySpec"
+               (Util.option_bind (Xml.member "WrappingKeySpec" xml)
+                  WrappingKeySpec.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("WrappingKeySpec",
+                   (WrappingKeySpec.to_query v.wrapping_key_spec)));
+           Some
+             (Query.Pair
+                ("WrappingAlgorithm",
+                  (AlgorithmSpec.to_query v.wrapping_algorithm)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some
+              ("wrapping_key_spec",
+                (WrappingKeySpec.to_json v.wrapping_key_spec));
+           Some
+             ("wrapping_algorithm",
+               (AlgorithmSpec.to_json v.wrapping_algorithm));
+           Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        wrapping_algorithm =
+          (AlgorithmSpec.of_json
+             (Util.of_option_exn (Json.lookup j "wrapping_algorithm")));
+        wrapping_key_spec =
+          (WrappingKeySpec.of_json
+             (Util.of_option_exn (Json.lookup j "wrapping_key_spec")))
+      }
   end
 module GetKeyPolicyResponse =
   struct
@@ -564,6 +1639,188 @@ module ListKeysResponse =
           (Util.option_map (Json.lookup j "truncated") Boolean.of_json)
       }
   end
+module ImportKeyMaterialResponse =
+  struct
+    type t = unit
+    let make () = ()
+    let parse xml = Some ()
+    let to_query v = Query.List (Util.list_filter_opt [])
+    let to_json v = `Assoc (Util.list_filter_opt [])
+    let of_json j = ()
+  end
+module TagResourceRequest =
+  struct
+    type t = {
+      key_id: String.t ;
+      tags: TagList.t }
+    let make ~key_id  ~tags  () = { key_id; tags }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          tags =
+            (Xml.required "Tags"
+               (Util.option_bind (Xml.member "Tags" xml) TagList.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some (Query.Pair ("Tags.member", (TagList.to_query v.tags)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some ("tags", (TagList.to_json v.tags));
+           Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        tags = (TagList.of_json (Util.of_option_exn (Json.lookup j "tags")))
+      }
+  end
+module VerifyRequest =
+  struct
+    type t =
+      {
+      key_id: String.t ;
+      message: Blob.t ;
+      message_type: MessageType.t option ;
+      signature: Blob.t ;
+      signing_algorithm: SigningAlgorithmSpec.t ;
+      grant_tokens: GrantTokenList.t }
+    let make ~key_id  ~message  ?message_type  ~signature  ~signing_algorithm
+       ?(grant_tokens= [])  () =
+      {
+        key_id;
+        message;
+        message_type;
+        signature;
+        signing_algorithm;
+        grant_tokens
+      }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          message =
+            (Xml.required "Message"
+               (Util.option_bind (Xml.member "Message" xml) Blob.parse));
+          message_type =
+            (Util.option_bind (Xml.member "MessageType" xml)
+               MessageType.parse);
+          signature =
+            (Xml.required "Signature"
+               (Util.option_bind (Xml.member "Signature" xml) Blob.parse));
+          signing_algorithm =
+            (Xml.required "SigningAlgorithm"
+               (Util.option_bind (Xml.member "SigningAlgorithm" xml)
+                  SigningAlgorithmSpec.parse));
+          grant_tokens =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "GrantTokens" xml)
+                  GrantTokenList.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("GrantTokens.member",
+                   (GrantTokenList.to_query v.grant_tokens)));
+           Some
+             (Query.Pair
+                ("SigningAlgorithm",
+                  (SigningAlgorithmSpec.to_query v.signing_algorithm)));
+           Some (Query.Pair ("Signature", (Blob.to_query v.signature)));
+           Util.option_map v.message_type
+             (fun f -> Query.Pair ("MessageType", (MessageType.to_query f)));
+           Some (Query.Pair ("Message", (Blob.to_query v.message)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
+           Some
+             ("signing_algorithm",
+               (SigningAlgorithmSpec.to_json v.signing_algorithm));
+           Some ("signature", (Blob.to_json v.signature));
+           Util.option_map v.message_type
+             (fun f -> ("message_type", (MessageType.to_json f)));
+           Some ("message", (Blob.to_json v.message));
+           Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        message =
+          (Blob.of_json (Util.of_option_exn (Json.lookup j "message")));
+        message_type =
+          (Util.option_map (Json.lookup j "message_type") MessageType.of_json);
+        signature =
+          (Blob.of_json (Util.of_option_exn (Json.lookup j "signature")));
+        signing_algorithm =
+          (SigningAlgorithmSpec.of_json
+             (Util.of_option_exn (Json.lookup j "signing_algorithm")));
+        grant_tokens =
+          (GrantTokenList.of_json
+             (Util.of_option_exn (Json.lookup j "grant_tokens")))
+      }
+  end
+module KMSInvalidStateException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module CloudHsmClusterNotActiveException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
 module DescribeKeyResponse =
   struct
     type t = {
@@ -599,9 +1856,17 @@ module EncryptRequest =
       key_id: String.t ;
       plaintext: Blob.t ;
       encryption_context: EncryptionContextType.t option ;
-      grant_tokens: GrantTokenList.t }
+      grant_tokens: GrantTokenList.t ;
+      encryption_algorithm: EncryptionAlgorithmSpec.t option }
     let make ~key_id  ~plaintext  ?encryption_context  ?(grant_tokens= []) 
-      () = { key_id; plaintext; encryption_context; grant_tokens }
+      ?encryption_algorithm  () =
+      {
+        key_id;
+        plaintext;
+        encryption_context;
+        grant_tokens;
+        encryption_algorithm
+      }
     let parse xml =
       Some
         {
@@ -617,15 +1882,23 @@ module EncryptRequest =
           grant_tokens =
             (Util.of_option []
                (Util.option_bind (Xml.member "GrantTokens" xml)
-                  GrantTokenList.parse))
+                  GrantTokenList.parse));
+          encryption_algorithm =
+            (Util.option_bind (Xml.member "EncryptionAlgorithm" xml)
+               EncryptionAlgorithmSpec.parse)
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Some
-              (Query.Pair
-                 ("GrantTokens.member",
-                   (GrantTokenList.to_query v.grant_tokens)));
+           [Util.option_map v.encryption_algorithm
+              (fun f ->
+                 Query.Pair
+                   ("EncryptionAlgorithm",
+                     (EncryptionAlgorithmSpec.to_query f)));
+           Some
+             (Query.Pair
+                ("GrantTokens.member",
+                  (GrantTokenList.to_query v.grant_tokens)));
            Util.option_map v.encryption_context
              (fun f ->
                 Query.Pair
@@ -635,7 +1908,11 @@ module EncryptRequest =
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
+           [Util.option_map v.encryption_algorithm
+              (fun f ->
+                 ("encryption_algorithm",
+                   (EncryptionAlgorithmSpec.to_json f)));
+           Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
            Util.option_map v.encryption_context
              (fun f ->
                 ("encryption_context", (EncryptionContextType.to_json f)));
@@ -652,7 +1929,154 @@ module EncryptRequest =
              EncryptionContextType.of_json);
         grant_tokens =
           (GrantTokenList.of_json
-             (Util.of_option_exn (Json.lookup j "grant_tokens")))
+             (Util.of_option_exn (Json.lookup j "grant_tokens")));
+        encryption_algorithm =
+          (Util.option_map (Json.lookup j "encryption_algorithm")
+             EncryptionAlgorithmSpec.of_json)
+      }
+  end
+module KMSInvalidSignatureException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module UpdateCustomKeyStoreRequest =
+  struct
+    type t =
+      {
+      custom_key_store_id: String.t ;
+      new_custom_key_store_name: String.t option ;
+      key_store_password: String.t option ;
+      cloud_hsm_cluster_id: String.t option }
+    let make ~custom_key_store_id  ?new_custom_key_store_name 
+      ?key_store_password  ?cloud_hsm_cluster_id  () =
+      {
+        custom_key_store_id;
+        new_custom_key_store_name;
+        key_store_password;
+        cloud_hsm_cluster_id
+      }
+    let parse xml =
+      Some
+        {
+          custom_key_store_id =
+            (Xml.required "CustomKeyStoreId"
+               (Util.option_bind (Xml.member "CustomKeyStoreId" xml)
+                  String.parse));
+          new_custom_key_store_name =
+            (Util.option_bind (Xml.member "NewCustomKeyStoreName" xml)
+               String.parse);
+          key_store_password =
+            (Util.option_bind (Xml.member "KeyStorePassword" xml)
+               String.parse);
+          cloud_hsm_cluster_id =
+            (Util.option_bind (Xml.member "CloudHsmClusterId" xml)
+               String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.cloud_hsm_cluster_id
+              (fun f -> Query.Pair ("CloudHsmClusterId", (String.to_query f)));
+           Util.option_map v.key_store_password
+             (fun f -> Query.Pair ("KeyStorePassword", (String.to_query f)));
+           Util.option_map v.new_custom_key_store_name
+             (fun f ->
+                Query.Pair ("NewCustomKeyStoreName", (String.to_query f)));
+           Some
+             (Query.Pair
+                ("CustomKeyStoreId", (String.to_query v.custom_key_store_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.cloud_hsm_cluster_id
+              (fun f -> ("cloud_hsm_cluster_id", (String.to_json f)));
+           Util.option_map v.key_store_password
+             (fun f -> ("key_store_password", (String.to_json f)));
+           Util.option_map v.new_custom_key_store_name
+             (fun f -> ("new_custom_key_store_name", (String.to_json f)));
+           Some
+             ("custom_key_store_id", (String.to_json v.custom_key_store_id))])
+    let of_json j =
+      {
+        custom_key_store_id =
+          (String.of_json
+             (Util.of_option_exn (Json.lookup j "custom_key_store_id")));
+        new_custom_key_store_name =
+          (Util.option_map (Json.lookup j "new_custom_key_store_name")
+             String.of_json);
+        key_store_password =
+          (Util.option_map (Json.lookup j "key_store_password")
+             String.of_json);
+        cloud_hsm_cluster_id =
+          (Util.option_map (Json.lookup j "cloud_hsm_cluster_id")
+             String.of_json)
+      }
+  end
+module ListRetirableGrantsRequest =
+  struct
+    type t =
+      {
+      limit: Integer.t option ;
+      marker: String.t option ;
+      retiring_principal: String.t }
+    let make ?limit  ?marker  ~retiring_principal  () =
+      { limit; marker; retiring_principal }
+    let parse xml =
+      Some
+        {
+          limit = (Util.option_bind (Xml.member "Limit" xml) Integer.parse);
+          marker = (Util.option_bind (Xml.member "Marker" xml) String.parse);
+          retiring_principal =
+            (Xml.required "RetiringPrincipal"
+               (Util.option_bind (Xml.member "RetiringPrincipal" xml)
+                  String.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("RetiringPrincipal",
+                   (String.to_query v.retiring_principal)));
+           Util.option_map v.marker
+             (fun f -> Query.Pair ("Marker", (String.to_query f)));
+           Util.option_map v.limit
+             (fun f -> Query.Pair ("Limit", (Integer.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some
+              ("retiring_principal", (String.to_json v.retiring_principal));
+           Util.option_map v.marker (fun f -> ("marker", (String.to_json f)));
+           Util.option_map v.limit (fun f -> ("limit", (Integer.to_json f)))])
+    let of_json j =
+      {
+        limit = (Util.option_map (Json.lookup j "limit") Integer.of_json);
+        marker = (Util.option_map (Json.lookup j "marker") String.of_json);
+        retiring_principal =
+          (String.of_json
+             (Util.of_option_exn (Json.lookup j "retiring_principal")))
       }
   end
 module RetireGrantRequest =
@@ -697,6 +2121,60 @@ module RetireGrantRequest =
         key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
         grant_id =
           (Util.option_map (Json.lookup j "grant_id") String.of_json)
+      }
+  end
+module CreateCustomKeyStoreResponse =
+  struct
+    type t = {
+      custom_key_store_id: String.t option }
+    let make ?custom_key_store_id  () = { custom_key_store_id }
+    let parse xml =
+      Some
+        {
+          custom_key_store_id =
+            (Util.option_bind (Xml.member "CustomKeyStoreId" xml)
+               String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.custom_key_store_id
+              (fun f -> Query.Pair ("CustomKeyStoreId", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.custom_key_store_id
+              (fun f -> ("custom_key_store_id", (String.to_json f)))])
+    let of_json j =
+      {
+        custom_key_store_id =
+          (Util.option_map (Json.lookup j "custom_key_store_id")
+             String.of_json)
+      }
+  end
+module ExpiredImportTokenException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
       }
   end
 module GenerateRandomResponse =
@@ -800,68 +2278,176 @@ module GenerateDataKeyRequest =
              (Util.of_option_exn (Json.lookup j "grant_tokens")))
       }
   end
+module DescribeCustomKeyStoresResponse =
+  struct
+    type t =
+      {
+      custom_key_stores: CustomKeyStoresList.t ;
+      next_marker: String.t option ;
+      truncated: Boolean.t option }
+    let make ?(custom_key_stores= [])  ?next_marker  ?truncated  () =
+      { custom_key_stores; next_marker; truncated }
+    let parse xml =
+      Some
+        {
+          custom_key_stores =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "CustomKeyStores" xml)
+                  CustomKeyStoresList.parse));
+          next_marker =
+            (Util.option_bind (Xml.member "NextMarker" xml) String.parse);
+          truncated =
+            (Util.option_bind (Xml.member "Truncated" xml) Boolean.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.truncated
+              (fun f -> Query.Pair ("Truncated", (Boolean.to_query f)));
+           Util.option_map v.next_marker
+             (fun f -> Query.Pair ("NextMarker", (String.to_query f)));
+           Some
+             (Query.Pair
+                ("CustomKeyStores.member",
+                  (CustomKeyStoresList.to_query v.custom_key_stores)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.truncated
+              (fun f -> ("truncated", (Boolean.to_json f)));
+           Util.option_map v.next_marker
+             (fun f -> ("next_marker", (String.to_json f)));
+           Some
+             ("custom_key_stores",
+               (CustomKeyStoresList.to_json v.custom_key_stores))])
+    let of_json j =
+      {
+        custom_key_stores =
+          (CustomKeyStoresList.of_json
+             (Util.of_option_exn (Json.lookup j "custom_key_stores")));
+        next_marker =
+          (Util.option_map (Json.lookup j "next_marker") String.of_json);
+        truncated =
+          (Util.option_map (Json.lookup j "truncated") Boolean.of_json)
+      }
+  end
 module EncryptResponse =
   struct
-    type t = {
+    type t =
+      {
       ciphertext_blob: Blob.t option ;
-      key_id: String.t option }
-    let make ?ciphertext_blob  ?key_id  () = { ciphertext_blob; key_id }
+      key_id: String.t option ;
+      encryption_algorithm: EncryptionAlgorithmSpec.t option }
+    let make ?ciphertext_blob  ?key_id  ?encryption_algorithm  () =
+      { ciphertext_blob; key_id; encryption_algorithm }
     let parse xml =
       Some
         {
           ciphertext_blob =
             (Util.option_bind (Xml.member "CiphertextBlob" xml) Blob.parse);
-          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse)
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          encryption_algorithm =
+            (Util.option_bind (Xml.member "EncryptionAlgorithm" xml)
+               EncryptionAlgorithmSpec.parse)
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Util.option_map v.key_id
-              (fun f -> Query.Pair ("KeyId", (String.to_query f)));
+           [Util.option_map v.encryption_algorithm
+              (fun f ->
+                 Query.Pair
+                   ("EncryptionAlgorithm",
+                     (EncryptionAlgorithmSpec.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)));
            Util.option_map v.ciphertext_blob
              (fun f -> Query.Pair ("CiphertextBlob", (Blob.to_query f)))])
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Util.option_map v.key_id
-              (fun f -> ("key_id", (String.to_json f)));
+           [Util.option_map v.encryption_algorithm
+              (fun f ->
+                 ("encryption_algorithm",
+                   (EncryptionAlgorithmSpec.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)));
            Util.option_map v.ciphertext_blob
              (fun f -> ("ciphertext_blob", (Blob.to_json f)))])
     let of_json j =
       {
         ciphertext_blob =
           (Util.option_map (Json.lookup j "ciphertext_blob") Blob.of_json);
-        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json)
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
+        encryption_algorithm =
+          (Util.option_map (Json.lookup j "encryption_algorithm")
+             EncryptionAlgorithmSpec.of_json)
       }
   end
 module GenerateRandomRequest =
   struct
-    type t = {
-      number_of_bytes: Integer.t option }
-    let make ?number_of_bytes  () = { number_of_bytes }
+    type t =
+      {
+      number_of_bytes: Integer.t option ;
+      custom_key_store_id: String.t option }
+    let make ?number_of_bytes  ?custom_key_store_id  () =
+      { number_of_bytes; custom_key_store_id }
     let parse xml =
       Some
         {
           number_of_bytes =
-            (Util.option_bind (Xml.member "NumberOfBytes" xml) Integer.parse)
+            (Util.option_bind (Xml.member "NumberOfBytes" xml) Integer.parse);
+          custom_key_store_id =
+            (Util.option_bind (Xml.member "CustomKeyStoreId" xml)
+               String.parse)
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Util.option_map v.number_of_bytes
-              (fun f -> Query.Pair ("NumberOfBytes", (Integer.to_query f)))])
+           [Util.option_map v.custom_key_store_id
+              (fun f -> Query.Pair ("CustomKeyStoreId", (String.to_query f)));
+           Util.option_map v.number_of_bytes
+             (fun f -> Query.Pair ("NumberOfBytes", (Integer.to_query f)))])
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Util.option_map v.number_of_bytes
-              (fun f -> ("number_of_bytes", (Integer.to_json f)))])
+           [Util.option_map v.custom_key_store_id
+              (fun f -> ("custom_key_store_id", (String.to_json f)));
+           Util.option_map v.number_of_bytes
+             (fun f -> ("number_of_bytes", (Integer.to_json f)))])
     let of_json j =
       {
         number_of_bytes =
-          (Util.option_map (Json.lookup j "number_of_bytes") Integer.of_json)
+          (Util.option_map (Json.lookup j "number_of_bytes") Integer.of_json);
+        custom_key_store_id =
+          (Util.option_map (Json.lookup j "custom_key_store_id")
+             String.of_json)
       }
   end
 module DependencyTimeoutException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module CustomKeyStoreNotFoundException =
   struct
     type t = {
       message: String.t option }
@@ -909,6 +2495,111 @@ module InvalidArnException =
               (fun f -> ("message", (String.to_json f)))])
     let of_json j =
       { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module CustomKeyStoreInvalidStateException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module ImportKeyMaterialRequest =
+  struct
+    type t =
+      {
+      key_id: String.t ;
+      import_token: Blob.t ;
+      encrypted_key_material: Blob.t ;
+      valid_to: DateTime.t option ;
+      expiration_model: ExpirationModelType.t option }
+    let make ~key_id  ~import_token  ~encrypted_key_material  ?valid_to 
+      ?expiration_model  () =
+      {
+        key_id;
+        import_token;
+        encrypted_key_material;
+        valid_to;
+        expiration_model
+      }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          import_token =
+            (Xml.required "ImportToken"
+               (Util.option_bind (Xml.member "ImportToken" xml) Blob.parse));
+          encrypted_key_material =
+            (Xml.required "EncryptedKeyMaterial"
+               (Util.option_bind (Xml.member "EncryptedKeyMaterial" xml)
+                  Blob.parse));
+          valid_to =
+            (Util.option_bind (Xml.member "ValidTo" xml) DateTime.parse);
+          expiration_model =
+            (Util.option_bind (Xml.member "ExpirationModel" xml)
+               ExpirationModelType.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.expiration_model
+              (fun f ->
+                 Query.Pair
+                   ("ExpirationModel", (ExpirationModelType.to_query f)));
+           Util.option_map v.valid_to
+             (fun f -> Query.Pair ("ValidTo", (DateTime.to_query f)));
+           Some
+             (Query.Pair
+                ("EncryptedKeyMaterial",
+                  (Blob.to_query v.encrypted_key_material)));
+           Some (Query.Pair ("ImportToken", (Blob.to_query v.import_token)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.expiration_model
+              (fun f -> ("expiration_model", (ExpirationModelType.to_json f)));
+           Util.option_map v.valid_to
+             (fun f -> ("valid_to", (DateTime.to_json f)));
+           Some
+             ("encrypted_key_material",
+               (Blob.to_json v.encrypted_key_material));
+           Some ("import_token", (Blob.to_json v.import_token));
+           Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        import_token =
+          (Blob.of_json (Util.of_option_exn (Json.lookup j "import_token")));
+        encrypted_key_material =
+          (Blob.of_json
+             (Util.of_option_exn (Json.lookup j "encrypted_key_material")));
+        valid_to =
+          (Util.option_map (Json.lookup j "valid_to") DateTime.of_json);
+        expiration_model =
+          (Util.option_map (Json.lookup j "expiration_model")
+             ExpirationModelType.of_json)
       }
   end
 module EnableKeyRotationRequest =
@@ -986,6 +2677,151 @@ module MalformedPolicyDocumentException =
       { message = (Util.option_map (Json.lookup j "message") String.of_json)
       }
   end
+module ScheduleKeyDeletionRequest =
+  struct
+    type t = {
+      key_id: String.t ;
+      pending_window_in_days: Integer.t option }
+    let make ~key_id  ?pending_window_in_days  () =
+      { key_id; pending_window_in_days }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          pending_window_in_days =
+            (Util.option_bind (Xml.member "PendingWindowInDays" xml)
+               Integer.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.pending_window_in_days
+              (fun f ->
+                 Query.Pair ("PendingWindowInDays", (Integer.to_query f)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.pending_window_in_days
+              (fun f -> ("pending_window_in_days", (Integer.to_json f)));
+           Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        pending_window_in_days =
+          (Util.option_map (Json.lookup j "pending_window_in_days")
+             Integer.of_json)
+      }
+  end
+module GetPublicKeyRequest =
+  struct
+    type t = {
+      key_id: String.t ;
+      grant_tokens: GrantTokenList.t }
+    let make ~key_id  ?(grant_tokens= [])  () = { key_id; grant_tokens }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          grant_tokens =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "GrantTokens" xml)
+                  GrantTokenList.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("GrantTokens.member",
+                   (GrantTokenList.to_query v.grant_tokens)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
+           Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        grant_tokens =
+          (GrantTokenList.of_json
+             (Util.of_option_exn (Json.lookup j "grant_tokens")))
+      }
+  end
+module GenerateDataKeyPairRequest =
+  struct
+    type t =
+      {
+      encryption_context: EncryptionContextType.t option ;
+      key_id: String.t ;
+      key_pair_spec: DataKeyPairSpec.t ;
+      grant_tokens: GrantTokenList.t }
+    let make ?encryption_context  ~key_id  ~key_pair_spec  ?(grant_tokens=
+      [])  () = { encryption_context; key_id; key_pair_spec; grant_tokens }
+    let parse xml =
+      Some
+        {
+          encryption_context =
+            (Util.option_bind (Xml.member "EncryptionContext" xml)
+               EncryptionContextType.parse);
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          key_pair_spec =
+            (Xml.required "KeyPairSpec"
+               (Util.option_bind (Xml.member "KeyPairSpec" xml)
+                  DataKeyPairSpec.parse));
+          grant_tokens =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "GrantTokens" xml)
+                  GrantTokenList.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("GrantTokens.member",
+                   (GrantTokenList.to_query v.grant_tokens)));
+           Some
+             (Query.Pair
+                ("KeyPairSpec", (DataKeyPairSpec.to_query v.key_pair_spec)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)));
+           Util.option_map v.encryption_context
+             (fun f ->
+                Query.Pair
+                  ("EncryptionContext", (EncryptionContextType.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
+           Some ("key_pair_spec", (DataKeyPairSpec.to_json v.key_pair_spec));
+           Some ("key_id", (String.to_json v.key_id));
+           Util.option_map v.encryption_context
+             (fun f ->
+                ("encryption_context", (EncryptionContextType.to_json f)))])
+    let of_json j =
+      {
+        encryption_context =
+          (Util.option_map (Json.lookup j "encryption_context")
+             EncryptionContextType.of_json);
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        key_pair_spec =
+          (DataKeyPairSpec.of_json
+             (Util.of_option_exn (Json.lookup j "key_pair_spec")));
+        grant_tokens =
+          (GrantTokenList.of_json
+             (Util.of_option_exn (Json.lookup j "grant_tokens")))
+      }
+  end
 module GetKeyRotationStatusRequest =
   struct
     type t = {
@@ -1017,17 +2853,24 @@ module ReEncryptRequest =
       {
       ciphertext_blob: Blob.t ;
       source_encryption_context: EncryptionContextType.t option ;
+      source_key_id: String.t option ;
       destination_key_id: String.t ;
       destination_encryption_context: EncryptionContextType.t option ;
+      source_encryption_algorithm: EncryptionAlgorithmSpec.t option ;
+      destination_encryption_algorithm: EncryptionAlgorithmSpec.t option ;
       grant_tokens: GrantTokenList.t }
-    let make ~ciphertext_blob  ?source_encryption_context 
-      ~destination_key_id  ?destination_encryption_context  ?(grant_tokens=
-      [])  () =
+    let make ~ciphertext_blob  ?source_encryption_context  ?source_key_id 
+      ~destination_key_id  ?destination_encryption_context 
+      ?source_encryption_algorithm  ?destination_encryption_algorithm 
+      ?(grant_tokens= [])  () =
       {
         ciphertext_blob;
         source_encryption_context;
+        source_key_id;
         destination_key_id;
         destination_encryption_context;
+        source_encryption_algorithm;
+        destination_encryption_algorithm;
         grant_tokens
       }
     let parse xml =
@@ -1039,6 +2882,8 @@ module ReEncryptRequest =
           source_encryption_context =
             (Util.option_bind (Xml.member "SourceEncryptionContext" xml)
                EncryptionContextType.parse);
+          source_key_id =
+            (Util.option_bind (Xml.member "SourceKeyId" xml) String.parse);
           destination_key_id =
             (Xml.required "DestinationKeyId"
                (Util.option_bind (Xml.member "DestinationKeyId" xml)
@@ -1046,6 +2891,13 @@ module ReEncryptRequest =
           destination_encryption_context =
             (Util.option_bind (Xml.member "DestinationEncryptionContext" xml)
                EncryptionContextType.parse);
+          source_encryption_algorithm =
+            (Util.option_bind (Xml.member "SourceEncryptionAlgorithm" xml)
+               EncryptionAlgorithmSpec.parse);
+          destination_encryption_algorithm =
+            (Util.option_bind
+               (Xml.member "DestinationEncryptionAlgorithm" xml)
+               EncryptionAlgorithmSpec.parse);
           grant_tokens =
             (Util.of_option []
                (Util.option_bind (Xml.member "GrantTokens" xml)
@@ -1058,6 +2910,16 @@ module ReEncryptRequest =
               (Query.Pair
                  ("GrantTokens.member",
                    (GrantTokenList.to_query v.grant_tokens)));
+           Util.option_map v.destination_encryption_algorithm
+             (fun f ->
+                Query.Pair
+                  ("DestinationEncryptionAlgorithm",
+                    (EncryptionAlgorithmSpec.to_query f)));
+           Util.option_map v.source_encryption_algorithm
+             (fun f ->
+                Query.Pair
+                  ("SourceEncryptionAlgorithm",
+                    (EncryptionAlgorithmSpec.to_query f)));
            Util.option_map v.destination_encryption_context
              (fun f ->
                 Query.Pair
@@ -1066,6 +2928,8 @@ module ReEncryptRequest =
            Some
              (Query.Pair
                 ("DestinationKeyId", (String.to_query v.destination_key_id)));
+           Util.option_map v.source_key_id
+             (fun f -> Query.Pair ("SourceKeyId", (String.to_query f)));
            Util.option_map v.source_encryption_context
              (fun f ->
                 Query.Pair
@@ -1078,11 +2942,21 @@ module ReEncryptRequest =
       `Assoc
         (Util.list_filter_opt
            [Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
+           Util.option_map v.destination_encryption_algorithm
+             (fun f ->
+                ("destination_encryption_algorithm",
+                  (EncryptionAlgorithmSpec.to_json f)));
+           Util.option_map v.source_encryption_algorithm
+             (fun f ->
+                ("source_encryption_algorithm",
+                  (EncryptionAlgorithmSpec.to_json f)));
            Util.option_map v.destination_encryption_context
              (fun f ->
                 ("destination_encryption_context",
                   (EncryptionContextType.to_json f)));
            Some ("destination_key_id", (String.to_json v.destination_key_id));
+           Util.option_map v.source_key_id
+             (fun f -> ("source_key_id", (String.to_json f)));
            Util.option_map v.source_encryption_context
              (fun f ->
                 ("source_encryption_context",
@@ -1096,15 +2970,48 @@ module ReEncryptRequest =
         source_encryption_context =
           (Util.option_map (Json.lookup j "source_encryption_context")
              EncryptionContextType.of_json);
+        source_key_id =
+          (Util.option_map (Json.lookup j "source_key_id") String.of_json);
         destination_key_id =
           (String.of_json
              (Util.of_option_exn (Json.lookup j "destination_key_id")));
         destination_encryption_context =
           (Util.option_map (Json.lookup j "destination_encryption_context")
              EncryptionContextType.of_json);
+        source_encryption_algorithm =
+          (Util.option_map (Json.lookup j "source_encryption_algorithm")
+             EncryptionAlgorithmSpec.of_json);
+        destination_encryption_algorithm =
+          (Util.option_map (Json.lookup j "destination_encryption_algorithm")
+             EncryptionAlgorithmSpec.of_json);
         grant_tokens =
           (GrantTokenList.of_json
              (Util.of_option_exn (Json.lookup j "grant_tokens")))
+      }
+  end
+module CustomKeyStoreNameInUseException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
       }
   end
 module InvalidMarkerException =
@@ -1157,37 +3064,310 @@ module EnableKeyRequest =
           (String.of_json (Util.of_option_exn (Json.lookup j "key_id")))
       }
   end
-module DecryptResponse =
+module DeleteCustomKeyStoreRequest =
   struct
     type t = {
-      key_id: String.t option ;
-      plaintext: Blob.t option }
-    let make ?key_id  ?plaintext  () = { key_id; plaintext }
+      custom_key_store_id: String.t }
+    let make ~custom_key_store_id  () = { custom_key_store_id }
     let parse xml =
       Some
         {
-          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
-          plaintext =
-            (Util.option_bind (Xml.member "Plaintext" xml) Blob.parse)
+          custom_key_store_id =
+            (Xml.required "CustomKeyStoreId"
+               (Util.option_bind (Xml.member "CustomKeyStoreId" xml)
+                  String.parse))
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Util.option_map v.plaintext
-              (fun f -> Query.Pair ("Plaintext", (Blob.to_query f)));
+           [Some
+              (Query.Pair
+                 ("CustomKeyStoreId",
+                   (String.to_query v.custom_key_store_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some
+              ("custom_key_store_id", (String.to_json v.custom_key_store_id))])
+    let of_json j =
+      {
+        custom_key_store_id =
+          (String.of_json
+             (Util.of_option_exn (Json.lookup j "custom_key_store_id")))
+      }
+  end
+module DeleteImportedKeyMaterialRequest =
+  struct
+    type t = {
+      key_id: String.t }
+    let make ~key_id  () = { key_id }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt [Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")))
+      }
+  end
+module IncorrectKeyException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module GetPublicKeyResponse =
+  struct
+    type t =
+      {
+      key_id: String.t option ;
+      public_key: Blob.t option ;
+      customer_master_key_spec: CustomerMasterKeySpec.t option ;
+      key_usage: KeyUsageType.t option ;
+      encryption_algorithms: EncryptionAlgorithmSpecList.t ;
+      signing_algorithms: SigningAlgorithmSpecList.t }
+    let make ?key_id  ?public_key  ?customer_master_key_spec  ?key_usage 
+      ?(encryption_algorithms= [])  ?(signing_algorithms= [])  () =
+      {
+        key_id;
+        public_key;
+        customer_master_key_spec;
+        key_usage;
+        encryption_algorithms;
+        signing_algorithms
+      }
+    let parse xml =
+      Some
+        {
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          public_key =
+            (Util.option_bind (Xml.member "PublicKey" xml) Blob.parse);
+          customer_master_key_spec =
+            (Util.option_bind (Xml.member "CustomerMasterKeySpec" xml)
+               CustomerMasterKeySpec.parse);
+          key_usage =
+            (Util.option_bind (Xml.member "KeyUsage" xml) KeyUsageType.parse);
+          encryption_algorithms =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "EncryptionAlgorithms" xml)
+                  EncryptionAlgorithmSpecList.parse));
+          signing_algorithms =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "SigningAlgorithms" xml)
+                  SigningAlgorithmSpecList.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("SigningAlgorithms.member",
+                   (SigningAlgorithmSpecList.to_query v.signing_algorithms)));
+           Some
+             (Query.Pair
+                ("EncryptionAlgorithms.member",
+                  (EncryptionAlgorithmSpecList.to_query
+                     v.encryption_algorithms)));
+           Util.option_map v.key_usage
+             (fun f -> Query.Pair ("KeyUsage", (KeyUsageType.to_query f)));
+           Util.option_map v.customer_master_key_spec
+             (fun f ->
+                Query.Pair
+                  ("CustomerMasterKeySpec",
+                    (CustomerMasterKeySpec.to_query f)));
+           Util.option_map v.public_key
+             (fun f -> Query.Pair ("PublicKey", (Blob.to_query f)));
            Util.option_map v.key_id
              (fun f -> Query.Pair ("KeyId", (String.to_query f)))])
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Util.option_map v.plaintext
-              (fun f -> ("plaintext", (Blob.to_json f)));
+           [Some
+              ("signing_algorithms",
+                (SigningAlgorithmSpecList.to_json v.signing_algorithms));
+           Some
+             ("encryption_algorithms",
+               (EncryptionAlgorithmSpecList.to_json v.encryption_algorithms));
+           Util.option_map v.key_usage
+             (fun f -> ("key_usage", (KeyUsageType.to_json f)));
+           Util.option_map v.customer_master_key_spec
+             (fun f ->
+                ("customer_master_key_spec",
+                  (CustomerMasterKeySpec.to_json f)));
+           Util.option_map v.public_key
+             (fun f -> ("public_key", (Blob.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)))])
+    let of_json j =
+      {
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
+        public_key =
+          (Util.option_map (Json.lookup j "public_key") Blob.of_json);
+        customer_master_key_spec =
+          (Util.option_map (Json.lookup j "customer_master_key_spec")
+             CustomerMasterKeySpec.of_json);
+        key_usage =
+          (Util.option_map (Json.lookup j "key_usage") KeyUsageType.of_json);
+        encryption_algorithms =
+          (EncryptionAlgorithmSpecList.of_json
+             (Util.of_option_exn (Json.lookup j "encryption_algorithms")));
+        signing_algorithms =
+          (SigningAlgorithmSpecList.of_json
+             (Util.of_option_exn (Json.lookup j "signing_algorithms")))
+      }
+  end
+module CloudHsmClusterNotRelatedException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module ListResourceTagsRequest =
+  struct
+    type t =
+      {
+      key_id: String.t ;
+      limit: Integer.t option ;
+      marker: String.t option }
+    let make ~key_id  ?limit  ?marker  () = { key_id; limit; marker }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          limit = (Util.option_bind (Xml.member "Limit" xml) Integer.parse);
+          marker = (Util.option_bind (Xml.member "Marker" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.marker
+              (fun f -> Query.Pair ("Marker", (String.to_query f)));
+           Util.option_map v.limit
+             (fun f -> Query.Pair ("Limit", (Integer.to_query f)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.marker
+              (fun f -> ("marker", (String.to_json f)));
+           Util.option_map v.limit (fun f -> ("limit", (Integer.to_json f)));
+           Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        limit = (Util.option_map (Json.lookup j "limit") Integer.of_json);
+        marker = (Util.option_map (Json.lookup j "marker") String.of_json)
+      }
+  end
+module DeleteCustomKeyStoreResponse =
+  struct
+    type t = unit
+    let make () = ()
+    let parse xml = Some ()
+    let to_query v = Query.List (Util.list_filter_opt [])
+    let to_json v = `Assoc (Util.list_filter_opt [])
+    let of_json j = ()
+  end
+module DecryptResponse =
+  struct
+    type t =
+      {
+      key_id: String.t option ;
+      plaintext: Blob.t option ;
+      encryption_algorithm: EncryptionAlgorithmSpec.t option }
+    let make ?key_id  ?plaintext  ?encryption_algorithm  () =
+      { key_id; plaintext; encryption_algorithm }
+    let parse xml =
+      Some
+        {
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          plaintext =
+            (Util.option_bind (Xml.member "Plaintext" xml) Blob.parse);
+          encryption_algorithm =
+            (Util.option_bind (Xml.member "EncryptionAlgorithm" xml)
+               EncryptionAlgorithmSpec.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.encryption_algorithm
+              (fun f ->
+                 Query.Pair
+                   ("EncryptionAlgorithm",
+                     (EncryptionAlgorithmSpec.to_query f)));
+           Util.option_map v.plaintext
+             (fun f -> Query.Pair ("Plaintext", (Blob.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.encryption_algorithm
+              (fun f ->
+                 ("encryption_algorithm",
+                   (EncryptionAlgorithmSpec.to_json f)));
+           Util.option_map v.plaintext
+             (fun f -> ("plaintext", (Blob.to_json f)));
            Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)))])
     let of_json j =
       {
         key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
         plaintext =
-          (Util.option_map (Json.lookup j "plaintext") Blob.of_json)
+          (Util.option_map (Json.lookup j "plaintext") Blob.of_json);
+        encryption_algorithm =
+          (Util.option_map (Json.lookup j "encryption_algorithm")
+             EncryptionAlgorithmSpec.of_json)
       }
   end
 module KMSInternalException =
@@ -1213,6 +3393,55 @@ module KMSInternalException =
               (fun f -> ("message", (String.to_json f)))])
     let of_json j =
       { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module SignResponse =
+  struct
+    type t =
+      {
+      key_id: String.t option ;
+      signature: Blob.t option ;
+      signing_algorithm: SigningAlgorithmSpec.t option }
+    let make ?key_id  ?signature  ?signing_algorithm  () =
+      { key_id; signature; signing_algorithm }
+    let parse xml =
+      Some
+        {
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          signature =
+            (Util.option_bind (Xml.member "Signature" xml) Blob.parse);
+          signing_algorithm =
+            (Util.option_bind (Xml.member "SigningAlgorithm" xml)
+               SigningAlgorithmSpec.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.signing_algorithm
+              (fun f ->
+                 Query.Pair
+                   ("SigningAlgorithm", (SigningAlgorithmSpec.to_query f)));
+           Util.option_map v.signature
+             (fun f -> Query.Pair ("Signature", (Blob.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.signing_algorithm
+              (fun f ->
+                 ("signing_algorithm", (SigningAlgorithmSpec.to_json f)));
+           Util.option_map v.signature
+             (fun f -> ("signature", (Blob.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)))])
+    let of_json j =
+      {
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
+        signature =
+          (Util.option_map (Json.lookup j "signature") Blob.of_json);
+        signing_algorithm =
+          (Util.option_map (Json.lookup j "signing_algorithm")
+             SigningAlgorithmSpec.of_json)
       }
   end
 module AlreadyExistsException =
@@ -1352,6 +3581,55 @@ module ListKeyPoliciesResponse =
           (Util.option_map (Json.lookup j "truncated") Boolean.of_json)
       }
   end
+module VerifyResponse =
+  struct
+    type t =
+      {
+      key_id: String.t option ;
+      signature_valid: Boolean.t option ;
+      signing_algorithm: SigningAlgorithmSpec.t option }
+    let make ?key_id  ?signature_valid  ?signing_algorithm  () =
+      { key_id; signature_valid; signing_algorithm }
+    let parse xml =
+      Some
+        {
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          signature_valid =
+            (Util.option_bind (Xml.member "SignatureValid" xml) Boolean.parse);
+          signing_algorithm =
+            (Util.option_bind (Xml.member "SigningAlgorithm" xml)
+               SigningAlgorithmSpec.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.signing_algorithm
+              (fun f ->
+                 Query.Pair
+                   ("SigningAlgorithm", (SigningAlgorithmSpec.to_query f)));
+           Util.option_map v.signature_valid
+             (fun f -> Query.Pair ("SignatureValid", (Boolean.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.signing_algorithm
+              (fun f ->
+                 ("signing_algorithm", (SigningAlgorithmSpec.to_json f)));
+           Util.option_map v.signature_valid
+             (fun f -> ("signature_valid", (Boolean.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)))])
+    let of_json j =
+      {
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
+        signature_valid =
+          (Util.option_map (Json.lookup j "signature_valid") Boolean.of_json);
+        signing_algorithm =
+          (Util.option_map (Json.lookup j "signing_algorithm")
+             SigningAlgorithmSpec.of_json)
+      }
+  end
 module ListGrantsResponse =
   struct
     type t =
@@ -1400,13 +3678,16 @@ module ListGrantsResponse =
   end
 module ListAliasesRequest =
   struct
-    type t = {
+    type t =
+      {
+      key_id: String.t option ;
       limit: Integer.t option ;
       marker: String.t option }
-    let make ?limit  ?marker  () = { limit; marker }
+    let make ?key_id  ?limit  ?marker  () = { key_id; limit; marker }
     let parse xml =
       Some
         {
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
           limit = (Util.option_bind (Xml.member "Limit" xml) Integer.parse);
           marker = (Util.option_bind (Xml.member "Marker" xml) String.parse)
         }
@@ -1416,17 +3697,96 @@ module ListAliasesRequest =
            [Util.option_map v.marker
               (fun f -> Query.Pair ("Marker", (String.to_query f)));
            Util.option_map v.limit
-             (fun f -> Query.Pair ("Limit", (Integer.to_query f)))])
+             (fun f -> Query.Pair ("Limit", (Integer.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)))])
     let to_json v =
       `Assoc
         (Util.list_filter_opt
            [Util.option_map v.marker
               (fun f -> ("marker", (String.to_json f)));
-           Util.option_map v.limit (fun f -> ("limit", (Integer.to_json f)))])
+           Util.option_map v.limit (fun f -> ("limit", (Integer.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)))])
     let of_json j =
       {
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
         limit = (Util.option_map (Json.lookup j "limit") Integer.of_json);
         marker = (Util.option_map (Json.lookup j "marker") String.of_json)
+      }
+  end
+module SignRequest =
+  struct
+    type t =
+      {
+      key_id: String.t ;
+      message: Blob.t ;
+      message_type: MessageType.t option ;
+      grant_tokens: GrantTokenList.t ;
+      signing_algorithm: SigningAlgorithmSpec.t }
+    let make ~key_id  ~message  ?message_type  ?(grant_tokens= []) 
+      ~signing_algorithm  () =
+      { key_id; message; message_type; grant_tokens; signing_algorithm }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          message =
+            (Xml.required "Message"
+               (Util.option_bind (Xml.member "Message" xml) Blob.parse));
+          message_type =
+            (Util.option_bind (Xml.member "MessageType" xml)
+               MessageType.parse);
+          grant_tokens =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "GrantTokens" xml)
+                  GrantTokenList.parse));
+          signing_algorithm =
+            (Xml.required "SigningAlgorithm"
+               (Util.option_bind (Xml.member "SigningAlgorithm" xml)
+                  SigningAlgorithmSpec.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("SigningAlgorithm",
+                   (SigningAlgorithmSpec.to_query v.signing_algorithm)));
+           Some
+             (Query.Pair
+                ("GrantTokens.member",
+                  (GrantTokenList.to_query v.grant_tokens)));
+           Util.option_map v.message_type
+             (fun f -> Query.Pair ("MessageType", (MessageType.to_query f)));
+           Some (Query.Pair ("Message", (Blob.to_query v.message)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some
+              ("signing_algorithm",
+                (SigningAlgorithmSpec.to_json v.signing_algorithm));
+           Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
+           Util.option_map v.message_type
+             (fun f -> ("message_type", (MessageType.to_json f)));
+           Some ("message", (Blob.to_json v.message));
+           Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        message =
+          (Blob.of_json (Util.of_option_exn (Json.lookup j "message")));
+        message_type =
+          (Util.option_map (Json.lookup j "message_type") MessageType.of_json);
+        grant_tokens =
+          (GrantTokenList.of_json
+             (Util.of_option_exn (Json.lookup j "grant_tokens")));
+        signing_algorithm =
+          (SigningAlgorithmSpec.of_json
+             (Util.of_option_exn (Json.lookup j "signing_algorithm")))
       }
   end
 module ListKeyPoliciesRequest =
@@ -1469,7 +3829,124 @@ module ListKeyPoliciesRequest =
         marker = (Util.option_map (Json.lookup j "marker") String.of_json)
       }
   end
+module CloudHsmClusterNotFoundException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module GenerateDataKeyPairWithoutPlaintextRequest =
+  struct
+    type t =
+      {
+      encryption_context: EncryptionContextType.t option ;
+      key_id: String.t ;
+      key_pair_spec: DataKeyPairSpec.t ;
+      grant_tokens: GrantTokenList.t }
+    let make ?encryption_context  ~key_id  ~key_pair_spec  ?(grant_tokens=
+      [])  () = { encryption_context; key_id; key_pair_spec; grant_tokens }
+    let parse xml =
+      Some
+        {
+          encryption_context =
+            (Util.option_bind (Xml.member "EncryptionContext" xml)
+               EncryptionContextType.parse);
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          key_pair_spec =
+            (Xml.required "KeyPairSpec"
+               (Util.option_bind (Xml.member "KeyPairSpec" xml)
+                  DataKeyPairSpec.parse));
+          grant_tokens =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "GrantTokens" xml)
+                  GrantTokenList.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("GrantTokens.member",
+                   (GrantTokenList.to_query v.grant_tokens)));
+           Some
+             (Query.Pair
+                ("KeyPairSpec", (DataKeyPairSpec.to_query v.key_pair_spec)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)));
+           Util.option_map v.encryption_context
+             (fun f ->
+                Query.Pair
+                  ("EncryptionContext", (EncryptionContextType.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
+           Some ("key_pair_spec", (DataKeyPairSpec.to_json v.key_pair_spec));
+           Some ("key_id", (String.to_json v.key_id));
+           Util.option_map v.encryption_context
+             (fun f ->
+                ("encryption_context", (EncryptionContextType.to_json f)))])
+    let of_json j =
+      {
+        encryption_context =
+          (Util.option_map (Json.lookup j "encryption_context")
+             EncryptionContextType.of_json);
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        key_pair_spec =
+          (DataKeyPairSpec.of_json
+             (Util.of_option_exn (Json.lookup j "key_pair_spec")));
+        grant_tokens =
+          (GrantTokenList.of_json
+             (Util.of_option_exn (Json.lookup j "grant_tokens")))
+      }
+  end
 module NotFoundException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module IncorrectKeyMaterialException =
   struct
     type t = {
       message: String.t option }
@@ -1558,12 +4035,15 @@ module DeleteAliasRequest =
   end
 module PutKeyPolicyRequest =
   struct
-    type t = {
+    type t =
+      {
       key_id: String.t ;
       policy_name: String.t ;
-      policy: String.t }
-    let make ~key_id  ~policy_name  ~policy  () =
-      { key_id; policy_name; policy }
+      policy: String.t ;
+      bypass_policy_lockout_safety_check: Boolean.t option }
+    let make ~key_id  ~policy_name  ~policy 
+      ?bypass_policy_lockout_safety_check  () =
+      { key_id; policy_name; policy; bypass_policy_lockout_safety_check }
     let parse xml =
       Some
         {
@@ -1575,18 +4055,29 @@ module PutKeyPolicyRequest =
                (Util.option_bind (Xml.member "PolicyName" xml) String.parse));
           policy =
             (Xml.required "Policy"
-               (Util.option_bind (Xml.member "Policy" xml) String.parse))
+               (Util.option_bind (Xml.member "Policy" xml) String.parse));
+          bypass_policy_lockout_safety_check =
+            (Util.option_bind
+               (Xml.member "BypassPolicyLockoutSafetyCheck" xml)
+               Boolean.parse)
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Some (Query.Pair ("Policy", (String.to_query v.policy)));
+           [Util.option_map v.bypass_policy_lockout_safety_check
+              (fun f ->
+                 Query.Pair
+                   ("BypassPolicyLockoutSafetyCheck", (Boolean.to_query f)));
+           Some (Query.Pair ("Policy", (String.to_query v.policy)));
            Some (Query.Pair ("PolicyName", (String.to_query v.policy_name)));
            Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Some ("policy", (String.to_json v.policy));
+           [Util.option_map v.bypass_policy_lockout_safety_check
+              (fun f ->
+                 ("bypass_policy_lockout_safety_check", (Boolean.to_json f)));
+           Some ("policy", (String.to_json v.policy));
            Some ("policy_name", (String.to_json v.policy_name));
            Some ("key_id", (String.to_json v.key_id))])
     let of_json j =
@@ -1596,7 +4087,11 @@ module PutKeyPolicyRequest =
         policy_name =
           (String.of_json (Util.of_option_exn (Json.lookup j "policy_name")));
         policy =
-          (String.of_json (Util.of_option_exn (Json.lookup j "policy")))
+          (String.of_json (Util.of_option_exn (Json.lookup j "policy")));
+        bypass_policy_lockout_safety_check =
+          (Util.option_map
+             (Json.lookup j "bypass_policy_lockout_safety_check")
+             Boolean.of_json)
       }
   end
 module DecryptRequest =
@@ -1605,9 +4100,18 @@ module DecryptRequest =
       {
       ciphertext_blob: Blob.t ;
       encryption_context: EncryptionContextType.t option ;
-      grant_tokens: GrantTokenList.t }
-    let make ~ciphertext_blob  ?encryption_context  ?(grant_tokens= [])  () =
-      { ciphertext_blob; encryption_context; grant_tokens }
+      grant_tokens: GrantTokenList.t ;
+      key_id: String.t option ;
+      encryption_algorithm: EncryptionAlgorithmSpec.t option }
+    let make ~ciphertext_blob  ?encryption_context  ?(grant_tokens= []) 
+      ?key_id  ?encryption_algorithm  () =
+      {
+        ciphertext_blob;
+        encryption_context;
+        grant_tokens;
+        key_id;
+        encryption_algorithm
+      }
     let parse xml =
       Some
         {
@@ -1620,15 +4124,26 @@ module DecryptRequest =
           grant_tokens =
             (Util.of_option []
                (Util.option_bind (Xml.member "GrantTokens" xml)
-                  GrantTokenList.parse))
+                  GrantTokenList.parse));
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          encryption_algorithm =
+            (Util.option_bind (Xml.member "EncryptionAlgorithm" xml)
+               EncryptionAlgorithmSpec.parse)
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Some
-              (Query.Pair
-                 ("GrantTokens.member",
-                   (GrantTokenList.to_query v.grant_tokens)));
+           [Util.option_map v.encryption_algorithm
+              (fun f ->
+                 Query.Pair
+                   ("EncryptionAlgorithm",
+                     (EncryptionAlgorithmSpec.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)));
+           Some
+             (Query.Pair
+                ("GrantTokens.member",
+                  (GrantTokenList.to_query v.grant_tokens)));
            Util.option_map v.encryption_context
              (fun f ->
                 Query.Pair
@@ -1639,7 +4154,12 @@ module DecryptRequest =
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
+           [Util.option_map v.encryption_algorithm
+              (fun f ->
+                 ("encryption_algorithm",
+                   (EncryptionAlgorithmSpec.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)));
+           Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
            Util.option_map v.encryption_context
              (fun f ->
                 ("encryption_context", (EncryptionContextType.to_json f)));
@@ -1654,7 +4174,11 @@ module DecryptRequest =
              EncryptionContextType.of_json);
         grant_tokens =
           (GrantTokenList.of_json
-             (Util.of_option_exn (Json.lookup j "grant_tokens")))
+             (Util.of_option_exn (Json.lookup j "grant_tokens")));
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
+        encryption_algorithm =
+          (Util.option_map (Json.lookup j "encryption_algorithm")
+             EncryptionAlgorithmSpec.of_json)
       }
   end
 module DisabledException =
@@ -1714,6 +4238,31 @@ module GetKeyPolicyRequest =
           (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
         policy_name =
           (String.of_json (Util.of_option_exn (Json.lookup j "policy_name")))
+      }
+  end
+module CloudHsmClusterInvalidConfigurationException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
       }
   end
 module ListKeysRequest =
@@ -1827,16 +4376,18 @@ module CreateGrantRequest =
       retiring_principal: String.t option ;
       operations: GrantOperationList.t ;
       constraints: GrantConstraints.t option ;
-      grant_tokens: GrantTokenList.t }
-    let make ~key_id  ~grantee_principal  ?retiring_principal  ?(operations=
-      [])  ?constraints  ?(grant_tokens= [])  () =
+      grant_tokens: GrantTokenList.t ;
+      name: String.t option }
+    let make ~key_id  ~grantee_principal  ?retiring_principal  ~operations 
+      ?constraints  ?(grant_tokens= [])  ?name  () =
       {
         key_id;
         grantee_principal;
         retiring_principal;
         operations;
         constraints;
-        grant_tokens
+        grant_tokens;
+        name
       }
     let parse xml =
       Some
@@ -1852,7 +4403,7 @@ module CreateGrantRequest =
             (Util.option_bind (Xml.member "RetiringPrincipal" xml)
                String.parse);
           operations =
-            (Util.of_option []
+            (Xml.required "Operations"
                (Util.option_bind (Xml.member "Operations" xml)
                   GrantOperationList.parse));
           constraints =
@@ -1861,15 +4412,18 @@ module CreateGrantRequest =
           grant_tokens =
             (Util.of_option []
                (Util.option_bind (Xml.member "GrantTokens" xml)
-                  GrantTokenList.parse))
+                  GrantTokenList.parse));
+          name = (Util.option_bind (Xml.member "Name" xml) String.parse)
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Some
-              (Query.Pair
-                 ("GrantTokens.member",
-                   (GrantTokenList.to_query v.grant_tokens)));
+           [Util.option_map v.name
+              (fun f -> Query.Pair ("Name", (String.to_query f)));
+           Some
+             (Query.Pair
+                ("GrantTokens.member",
+                  (GrantTokenList.to_query v.grant_tokens)));
            Util.option_map v.constraints
              (fun f ->
                 Query.Pair ("Constraints", (GrantConstraints.to_query f)));
@@ -1886,7 +4440,8 @@ module CreateGrantRequest =
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
+           [Util.option_map v.name (fun f -> ("name", (String.to_json f)));
+           Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
            Util.option_map v.constraints
              (fun f -> ("constraints", (GrantConstraints.to_json f)));
            Some ("operations", (GrantOperationList.to_json v.operations));
@@ -1912,7 +4467,8 @@ module CreateGrantRequest =
              GrantConstraints.of_json);
         grant_tokens =
           (GrantTokenList.of_json
-             (Util.of_option_exn (Json.lookup j "grant_tokens")))
+             (Util.of_option_exn (Json.lookup j "grant_tokens")));
+        name = (Util.option_map (Json.lookup j "name") String.of_json)
       }
   end
 module GenerateDataKeyWithoutPlaintextRequest =
@@ -2050,44 +4606,120 @@ module CreateAliasRequest =
              (Util.of_option_exn (Json.lookup j "target_key_id")))
       }
   end
-module ListGrantsRequest =
+module GenerateDataKeyPairResponse =
   struct
     type t =
       {
-      key_id: String.t ;
-      limit: Integer.t option ;
-      marker: String.t option }
-    let make ~key_id  ?limit  ?marker  () = { key_id; limit; marker }
+      private_key_ciphertext_blob: Blob.t option ;
+      private_key_plaintext: Blob.t option ;
+      public_key: Blob.t option ;
+      key_id: String.t option ;
+      key_pair_spec: DataKeyPairSpec.t option }
+    let make ?private_key_ciphertext_blob  ?private_key_plaintext 
+      ?public_key  ?key_id  ?key_pair_spec  () =
+      {
+        private_key_ciphertext_blob;
+        private_key_plaintext;
+        public_key;
+        key_id;
+        key_pair_spec
+      }
     let parse xml =
       Some
         {
-          key_id =
-            (Xml.required "KeyId"
-               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
-          limit = (Util.option_bind (Xml.member "Limit" xml) Integer.parse);
-          marker = (Util.option_bind (Xml.member "Marker" xml) String.parse)
+          private_key_ciphertext_blob =
+            (Util.option_bind (Xml.member "PrivateKeyCiphertextBlob" xml)
+               Blob.parse);
+          private_key_plaintext =
+            (Util.option_bind (Xml.member "PrivateKeyPlaintext" xml)
+               Blob.parse);
+          public_key =
+            (Util.option_bind (Xml.member "PublicKey" xml) Blob.parse);
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          key_pair_spec =
+            (Util.option_bind (Xml.member "KeyPairSpec" xml)
+               DataKeyPairSpec.parse)
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Util.option_map v.marker
-              (fun f -> Query.Pair ("Marker", (String.to_query f)));
-           Util.option_map v.limit
-             (fun f -> Query.Pair ("Limit", (Integer.to_query f)));
-           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+           [Util.option_map v.key_pair_spec
+              (fun f ->
+                 Query.Pair ("KeyPairSpec", (DataKeyPairSpec.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)));
+           Util.option_map v.public_key
+             (fun f -> Query.Pair ("PublicKey", (Blob.to_query f)));
+           Util.option_map v.private_key_plaintext
+             (fun f -> Query.Pair ("PrivateKeyPlaintext", (Blob.to_query f)));
+           Util.option_map v.private_key_ciphertext_blob
+             (fun f ->
+                Query.Pair ("PrivateKeyCiphertextBlob", (Blob.to_query f)))])
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Util.option_map v.marker
-              (fun f -> ("marker", (String.to_json f)));
-           Util.option_map v.limit (fun f -> ("limit", (Integer.to_json f)));
-           Some ("key_id", (String.to_json v.key_id))])
+           [Util.option_map v.key_pair_spec
+              (fun f -> ("key_pair_spec", (DataKeyPairSpec.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)));
+           Util.option_map v.public_key
+             (fun f -> ("public_key", (Blob.to_json f)));
+           Util.option_map v.private_key_plaintext
+             (fun f -> ("private_key_plaintext", (Blob.to_json f)));
+           Util.option_map v.private_key_ciphertext_blob
+             (fun f -> ("private_key_ciphertext_blob", (Blob.to_json f)))])
     let of_json j =
       {
-        key_id =
-          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        private_key_ciphertext_blob =
+          (Util.option_map (Json.lookup j "private_key_ciphertext_blob")
+             Blob.of_json);
+        private_key_plaintext =
+          (Util.option_map (Json.lookup j "private_key_plaintext")
+             Blob.of_json);
+        public_key =
+          (Util.option_map (Json.lookup j "public_key") Blob.of_json);
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
+        key_pair_spec =
+          (Util.option_map (Json.lookup j "key_pair_spec")
+             DataKeyPairSpec.of_json)
+      }
+  end
+module ListGrantsRequest =
+  struct
+    type t =
+      {
+      limit: Integer.t option ;
+      marker: String.t option ;
+      key_id: String.t }
+    let make ?limit  ?marker  ~key_id  () = { limit; marker; key_id }
+    let parse xml =
+      Some
+        {
+          limit = (Util.option_bind (Xml.member "Limit" xml) Integer.parse);
+          marker = (Util.option_bind (Xml.member "Marker" xml) String.parse);
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some (Query.Pair ("KeyId", (String.to_query v.key_id)));
+           Util.option_map v.marker
+             (fun f -> Query.Pair ("Marker", (String.to_query f)));
+           Util.option_map v.limit
+             (fun f -> Query.Pair ("Limit", (Integer.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some ("key_id", (String.to_json v.key_id));
+           Util.option_map v.marker (fun f -> ("marker", (String.to_json f)));
+           Util.option_map v.limit (fun f -> ("limit", (Integer.to_json f)))])
+    let of_json j =
+      {
         limit = (Util.option_map (Json.lookup j "limit") Integer.of_json);
-        marker = (Util.option_map (Json.lookup j "marker") String.of_json)
+        marker = (Util.option_map (Json.lookup j "marker") String.of_json);
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")))
       }
   end
 module RevokeGrantRequest =
@@ -2213,6 +4845,47 @@ module GetKeyRotationStatusResponse =
              Boolean.of_json)
       }
   end
+module ConnectCustomKeyStoreResponse =
+  struct
+    type t = unit
+    let make () = ()
+    let parse xml = Some ()
+    let to_query v = Query.List (Util.list_filter_opt [])
+    let to_json v = `Assoc (Util.list_filter_opt [])
+    let of_json j = ()
+  end
+module DisconnectCustomKeyStoreRequest =
+  struct
+    type t = {
+      custom_key_store_id: String.t }
+    let make ~custom_key_store_id  () = { custom_key_store_id }
+    let parse xml =
+      Some
+        {
+          custom_key_store_id =
+            (Xml.required "CustomKeyStoreId"
+               (Util.option_bind (Xml.member "CustomKeyStoreId" xml)
+                  String.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("CustomKeyStoreId",
+                   (String.to_query v.custom_key_store_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some
+              ("custom_key_store_id", (String.to_json v.custom_key_store_id))])
+    let of_json j =
+      {
+        custom_key_store_id =
+          (String.of_json
+             (Util.of_option_exn (Json.lookup j "custom_key_store_id")))
+      }
+  end
 module ListAliasesResponse =
   struct
     type t =
@@ -2301,9 +4974,25 @@ module CreateKeyRequest =
       {
       policy: String.t option ;
       description: String.t option ;
-      key_usage: KeyUsageType.t option }
-    let make ?policy  ?description  ?key_usage  () =
-      { policy; description; key_usage }
+      key_usage: KeyUsageType.t option ;
+      customer_master_key_spec: CustomerMasterKeySpec.t option ;
+      origin: OriginType.t option ;
+      custom_key_store_id: String.t option ;
+      bypass_policy_lockout_safety_check: Boolean.t option ;
+      tags: TagList.t }
+    let make ?policy  ?description  ?key_usage  ?customer_master_key_spec 
+      ?origin  ?custom_key_store_id  ?bypass_policy_lockout_safety_check 
+      ?(tags= [])  () =
+      {
+        policy;
+        description;
+        key_usage;
+        customer_master_key_spec;
+        origin;
+        custom_key_store_id;
+        bypass_policy_lockout_safety_check;
+        tags
+      }
     let parse xml =
       Some
         {
@@ -2311,13 +5000,42 @@ module CreateKeyRequest =
           description =
             (Util.option_bind (Xml.member "Description" xml) String.parse);
           key_usage =
-            (Util.option_bind (Xml.member "KeyUsage" xml) KeyUsageType.parse)
+            (Util.option_bind (Xml.member "KeyUsage" xml) KeyUsageType.parse);
+          customer_master_key_spec =
+            (Util.option_bind (Xml.member "CustomerMasterKeySpec" xml)
+               CustomerMasterKeySpec.parse);
+          origin =
+            (Util.option_bind (Xml.member "Origin" xml) OriginType.parse);
+          custom_key_store_id =
+            (Util.option_bind (Xml.member "CustomKeyStoreId" xml)
+               String.parse);
+          bypass_policy_lockout_safety_check =
+            (Util.option_bind
+               (Xml.member "BypassPolicyLockoutSafetyCheck" xml)
+               Boolean.parse);
+          tags =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "Tags" xml) TagList.parse))
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Util.option_map v.key_usage
-              (fun f -> Query.Pair ("KeyUsage", (KeyUsageType.to_query f)));
+           [Some (Query.Pair ("Tags.member", (TagList.to_query v.tags)));
+           Util.option_map v.bypass_policy_lockout_safety_check
+             (fun f ->
+                Query.Pair
+                  ("BypassPolicyLockoutSafetyCheck", (Boolean.to_query f)));
+           Util.option_map v.custom_key_store_id
+             (fun f -> Query.Pair ("CustomKeyStoreId", (String.to_query f)));
+           Util.option_map v.origin
+             (fun f -> Query.Pair ("Origin", (OriginType.to_query f)));
+           Util.option_map v.customer_master_key_spec
+             (fun f ->
+                Query.Pair
+                  ("CustomerMasterKeySpec",
+                    (CustomerMasterKeySpec.to_query f)));
+           Util.option_map v.key_usage
+             (fun f -> Query.Pair ("KeyUsage", (KeyUsageType.to_query f)));
            Util.option_map v.description
              (fun f -> Query.Pair ("Description", (String.to_query f)));
            Util.option_map v.policy
@@ -2325,8 +5043,20 @@ module CreateKeyRequest =
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Util.option_map v.key_usage
-              (fun f -> ("key_usage", (KeyUsageType.to_json f)));
+           [Some ("tags", (TagList.to_json v.tags));
+           Util.option_map v.bypass_policy_lockout_safety_check
+             (fun f ->
+                ("bypass_policy_lockout_safety_check", (Boolean.to_json f)));
+           Util.option_map v.custom_key_store_id
+             (fun f -> ("custom_key_store_id", (String.to_json f)));
+           Util.option_map v.origin
+             (fun f -> ("origin", (OriginType.to_json f)));
+           Util.option_map v.customer_master_key_spec
+             (fun f ->
+                ("customer_master_key_spec",
+                  (CustomerMasterKeySpec.to_json f)));
+           Util.option_map v.key_usage
+             (fun f -> ("key_usage", (KeyUsageType.to_json f)));
            Util.option_map v.description
              (fun f -> ("description", (String.to_json f)));
            Util.option_map v.policy (fun f -> ("policy", (String.to_json f)))])
@@ -2336,7 +5066,80 @@ module CreateKeyRequest =
         description =
           (Util.option_map (Json.lookup j "description") String.of_json);
         key_usage =
-          (Util.option_map (Json.lookup j "key_usage") KeyUsageType.of_json)
+          (Util.option_map (Json.lookup j "key_usage") KeyUsageType.of_json);
+        customer_master_key_spec =
+          (Util.option_map (Json.lookup j "customer_master_key_spec")
+             CustomerMasterKeySpec.of_json);
+        origin =
+          (Util.option_map (Json.lookup j "origin") OriginType.of_json);
+        custom_key_store_id =
+          (Util.option_map (Json.lookup j "custom_key_store_id")
+             String.of_json);
+        bypass_policy_lockout_safety_check =
+          (Util.option_map
+             (Json.lookup j "bypass_policy_lockout_safety_check")
+             Boolean.of_json);
+        tags = (TagList.of_json (Util.of_option_exn (Json.lookup j "tags")))
+      }
+  end
+module GenerateDataKeyPairWithoutPlaintextResponse =
+  struct
+    type t =
+      {
+      private_key_ciphertext_blob: Blob.t option ;
+      public_key: Blob.t option ;
+      key_id: String.t option ;
+      key_pair_spec: DataKeyPairSpec.t option }
+    let make ?private_key_ciphertext_blob  ?public_key  ?key_id 
+      ?key_pair_spec  () =
+      { private_key_ciphertext_blob; public_key; key_id; key_pair_spec }
+    let parse xml =
+      Some
+        {
+          private_key_ciphertext_blob =
+            (Util.option_bind (Xml.member "PrivateKeyCiphertextBlob" xml)
+               Blob.parse);
+          public_key =
+            (Util.option_bind (Xml.member "PublicKey" xml) Blob.parse);
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          key_pair_spec =
+            (Util.option_bind (Xml.member "KeyPairSpec" xml)
+               DataKeyPairSpec.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.key_pair_spec
+              (fun f ->
+                 Query.Pair ("KeyPairSpec", (DataKeyPairSpec.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)));
+           Util.option_map v.public_key
+             (fun f -> Query.Pair ("PublicKey", (Blob.to_query f)));
+           Util.option_map v.private_key_ciphertext_blob
+             (fun f ->
+                Query.Pair ("PrivateKeyCiphertextBlob", (Blob.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.key_pair_spec
+              (fun f -> ("key_pair_spec", (DataKeyPairSpec.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)));
+           Util.option_map v.public_key
+             (fun f -> ("public_key", (Blob.to_json f)));
+           Util.option_map v.private_key_ciphertext_blob
+             (fun f -> ("private_key_ciphertext_blob", (Blob.to_json f)))])
+    let of_json j =
+      {
+        private_key_ciphertext_blob =
+          (Util.option_map (Json.lookup j "private_key_ciphertext_blob")
+             Blob.of_json);
+        public_key =
+          (Util.option_map (Json.lookup j "public_key") Blob.of_json);
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
+        key_pair_spec =
+          (Util.option_map (Json.lookup j "key_pair_spec")
+             DataKeyPairSpec.of_json)
       }
   end
 module InvalidAliasNameException =
@@ -2364,29 +5167,327 @@ module InvalidAliasNameException =
       { message = (Util.option_map (Json.lookup j "message") String.of_json)
       }
   end
-module DescribeKeyRequest =
+module CreateCustomKeyStoreRequest =
+  struct
+    type t =
+      {
+      custom_key_store_name: String.t ;
+      cloud_hsm_cluster_id: String.t ;
+      trust_anchor_certificate: String.t ;
+      key_store_password: String.t }
+    let make ~custom_key_store_name  ~cloud_hsm_cluster_id 
+      ~trust_anchor_certificate  ~key_store_password  () =
+      {
+        custom_key_store_name;
+        cloud_hsm_cluster_id;
+        trust_anchor_certificate;
+        key_store_password
+      }
+    let parse xml =
+      Some
+        {
+          custom_key_store_name =
+            (Xml.required "CustomKeyStoreName"
+               (Util.option_bind (Xml.member "CustomKeyStoreName" xml)
+                  String.parse));
+          cloud_hsm_cluster_id =
+            (Xml.required "CloudHsmClusterId"
+               (Util.option_bind (Xml.member "CloudHsmClusterId" xml)
+                  String.parse));
+          trust_anchor_certificate =
+            (Xml.required "TrustAnchorCertificate"
+               (Util.option_bind (Xml.member "TrustAnchorCertificate" xml)
+                  String.parse));
+          key_store_password =
+            (Xml.required "KeyStorePassword"
+               (Util.option_bind (Xml.member "KeyStorePassword" xml)
+                  String.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("KeyStorePassword", (String.to_query v.key_store_password)));
+           Some
+             (Query.Pair
+                ("TrustAnchorCertificate",
+                  (String.to_query v.trust_anchor_certificate)));
+           Some
+             (Query.Pair
+                ("CloudHsmClusterId",
+                  (String.to_query v.cloud_hsm_cluster_id)));
+           Some
+             (Query.Pair
+                ("CustomKeyStoreName",
+                  (String.to_query v.custom_key_store_name)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some
+              ("key_store_password", (String.to_json v.key_store_password));
+           Some
+             ("trust_anchor_certificate",
+               (String.to_json v.trust_anchor_certificate));
+           Some
+             ("cloud_hsm_cluster_id",
+               (String.to_json v.cloud_hsm_cluster_id));
+           Some
+             ("custom_key_store_name",
+               (String.to_json v.custom_key_store_name))])
+    let of_json j =
+      {
+        custom_key_store_name =
+          (String.of_json
+             (Util.of_option_exn (Json.lookup j "custom_key_store_name")));
+        cloud_hsm_cluster_id =
+          (String.of_json
+             (Util.of_option_exn (Json.lookup j "cloud_hsm_cluster_id")));
+        trust_anchor_certificate =
+          (String.of_json
+             (Util.of_option_exn (Json.lookup j "trust_anchor_certificate")));
+        key_store_password =
+          (String.of_json
+             (Util.of_option_exn (Json.lookup j "key_store_password")))
+      }
+  end
+module UntagResourceRequest =
   struct
     type t = {
-      key_id: String.t }
-    let make ~key_id  () = { key_id }
+      key_id: String.t ;
+      tag_keys: TagKeyList.t }
+    let make ~key_id  ~tag_keys  () = { key_id; tag_keys }
     let parse xml =
       Some
         {
           key_id =
             (Xml.required "KeyId"
-               (Util.option_bind (Xml.member "KeyId" xml) String.parse))
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          tag_keys =
+            (Xml.required "TagKeys"
+               (Util.option_bind (Xml.member "TagKeys" xml) TagKeyList.parse))
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+           [Some
+              (Query.Pair
+                 ("TagKeys.member", (TagKeyList.to_query v.tag_keys)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
     let to_json v =
       `Assoc
-        (Util.list_filter_opt [Some ("key_id", (String.to_json v.key_id))])
+        (Util.list_filter_opt
+           [Some ("tag_keys", (TagKeyList.to_json v.tag_keys));
+           Some ("key_id", (String.to_json v.key_id))])
     let of_json j =
       {
         key_id =
-          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")))
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        tag_keys =
+          (TagKeyList.of_json (Util.of_option_exn (Json.lookup j "tag_keys")))
+      }
+  end
+module IncorrectTrustAnchorException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module ScheduleKeyDeletionResponse =
+  struct
+    type t = {
+      key_id: String.t option ;
+      deletion_date: DateTime.t option }
+    let make ?key_id  ?deletion_date  () = { key_id; deletion_date }
+    let parse xml =
+      Some
+        {
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          deletion_date =
+            (Util.option_bind (Xml.member "DeletionDate" xml) DateTime.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.deletion_date
+              (fun f -> Query.Pair ("DeletionDate", (DateTime.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.deletion_date
+              (fun f -> ("deletion_date", (DateTime.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)))])
+    let of_json j =
+      {
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
+        deletion_date =
+          (Util.option_map (Json.lookup j "deletion_date") DateTime.of_json)
+      }
+  end
+module GetParametersForImportResponse =
+  struct
+    type t =
+      {
+      key_id: String.t option ;
+      import_token: Blob.t option ;
+      public_key: Blob.t option ;
+      parameters_valid_to: DateTime.t option }
+    let make ?key_id  ?import_token  ?public_key  ?parameters_valid_to  () =
+      { key_id; import_token; public_key; parameters_valid_to }
+    let parse xml =
+      Some
+        {
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          import_token =
+            (Util.option_bind (Xml.member "ImportToken" xml) Blob.parse);
+          public_key =
+            (Util.option_bind (Xml.member "PublicKey" xml) Blob.parse);
+          parameters_valid_to =
+            (Util.option_bind (Xml.member "ParametersValidTo" xml)
+               DateTime.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.parameters_valid_to
+              (fun f ->
+                 Query.Pair ("ParametersValidTo", (DateTime.to_query f)));
+           Util.option_map v.public_key
+             (fun f -> Query.Pair ("PublicKey", (Blob.to_query f)));
+           Util.option_map v.import_token
+             (fun f -> Query.Pair ("ImportToken", (Blob.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.parameters_valid_to
+              (fun f -> ("parameters_valid_to", (DateTime.to_json f)));
+           Util.option_map v.public_key
+             (fun f -> ("public_key", (Blob.to_json f)));
+           Util.option_map v.import_token
+             (fun f -> ("import_token", (Blob.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)))])
+    let of_json j =
+      {
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
+        import_token =
+          (Util.option_map (Json.lookup j "import_token") Blob.of_json);
+        public_key =
+          (Util.option_map (Json.lookup j "public_key") Blob.of_json);
+        parameters_valid_to =
+          (Util.option_map (Json.lookup j "parameters_valid_to")
+             DateTime.of_json)
+      }
+  end
+module InvalidGrantIdException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module TagException =
+  struct
+    type t = {
+      message: String.t option }
+    let make ?message  () = { message }
+    let parse xml =
+      Some
+        {
+          message =
+            (Util.option_bind (Xml.member "message" xml) String.parse)
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> Query.Pair ("message", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.message
+              (fun f -> ("message", (String.to_json f)))])
+    let of_json j =
+      { message = (Util.option_map (Json.lookup j "message") String.of_json)
+      }
+  end
+module DescribeKeyRequest =
+  struct
+    type t = {
+      key_id: String.t ;
+      grant_tokens: GrantTokenList.t }
+    let make ~key_id  ?(grant_tokens= [])  () = { key_id; grant_tokens }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse));
+          grant_tokens =
+            (Util.of_option []
+               (Util.option_bind (Xml.member "GrantTokens" xml)
+                  GrantTokenList.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some
+              (Query.Pair
+                 ("GrantTokens.member",
+                   (GrantTokenList.to_query v.grant_tokens)));
+           Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Some ("grant_tokens", (GrantTokenList.to_json v.grant_tokens));
+           Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")));
+        grant_tokens =
+          (GrantTokenList.of_json
+             (Util.of_option_exn (Json.lookup j "grant_tokens")))
       }
   end
 module DisableKeyRequest =
@@ -2414,15 +5515,45 @@ module DisableKeyRequest =
           (String.of_json (Util.of_option_exn (Json.lookup j "key_id")))
       }
   end
+module CancelKeyDeletionResponse =
+  struct
+    type t = {
+      key_id: String.t option }
+    let make ?key_id  () = { key_id }
+    let parse xml =
+      Some
+        { key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse) }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Util.option_map v.key_id
+              (fun f -> Query.Pair ("KeyId", (String.to_query f)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt
+           [Util.option_map v.key_id
+              (fun f -> ("key_id", (String.to_json f)))])
+    let of_json j =
+      { key_id = (Util.option_map (Json.lookup j "key_id") String.of_json) }
+  end
 module ReEncryptResponse =
   struct
     type t =
       {
       ciphertext_blob: Blob.t option ;
       source_key_id: String.t option ;
-      key_id: String.t option }
-    let make ?ciphertext_blob  ?source_key_id  ?key_id  () =
-      { ciphertext_blob; source_key_id; key_id }
+      key_id: String.t option ;
+      source_encryption_algorithm: EncryptionAlgorithmSpec.t option ;
+      destination_encryption_algorithm: EncryptionAlgorithmSpec.t option }
+    let make ?ciphertext_blob  ?source_key_id  ?key_id 
+      ?source_encryption_algorithm  ?destination_encryption_algorithm  () =
+      {
+        ciphertext_blob;
+        source_key_id;
+        key_id;
+        source_encryption_algorithm;
+        destination_encryption_algorithm
+      }
     let parse xml =
       Some
         {
@@ -2430,13 +5561,30 @@ module ReEncryptResponse =
             (Util.option_bind (Xml.member "CiphertextBlob" xml) Blob.parse);
           source_key_id =
             (Util.option_bind (Xml.member "SourceKeyId" xml) String.parse);
-          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse)
+          key_id = (Util.option_bind (Xml.member "KeyId" xml) String.parse);
+          source_encryption_algorithm =
+            (Util.option_bind (Xml.member "SourceEncryptionAlgorithm" xml)
+               EncryptionAlgorithmSpec.parse);
+          destination_encryption_algorithm =
+            (Util.option_bind
+               (Xml.member "DestinationEncryptionAlgorithm" xml)
+               EncryptionAlgorithmSpec.parse)
         }
     let to_query v =
       Query.List
         (Util.list_filter_opt
-           [Util.option_map v.key_id
-              (fun f -> Query.Pair ("KeyId", (String.to_query f)));
+           [Util.option_map v.destination_encryption_algorithm
+              (fun f ->
+                 Query.Pair
+                   ("DestinationEncryptionAlgorithm",
+                     (EncryptionAlgorithmSpec.to_query f)));
+           Util.option_map v.source_encryption_algorithm
+             (fun f ->
+                Query.Pair
+                  ("SourceEncryptionAlgorithm",
+                    (EncryptionAlgorithmSpec.to_query f)));
+           Util.option_map v.key_id
+             (fun f -> Query.Pair ("KeyId", (String.to_query f)));
            Util.option_map v.source_key_id
              (fun f -> Query.Pair ("SourceKeyId", (String.to_query f)));
            Util.option_map v.ciphertext_blob
@@ -2444,8 +5592,15 @@ module ReEncryptResponse =
     let to_json v =
       `Assoc
         (Util.list_filter_opt
-           [Util.option_map v.key_id
-              (fun f -> ("key_id", (String.to_json f)));
+           [Util.option_map v.destination_encryption_algorithm
+              (fun f ->
+                 ("destination_encryption_algorithm",
+                   (EncryptionAlgorithmSpec.to_json f)));
+           Util.option_map v.source_encryption_algorithm
+             (fun f ->
+                ("source_encryption_algorithm",
+                  (EncryptionAlgorithmSpec.to_json f)));
+           Util.option_map v.key_id (fun f -> ("key_id", (String.to_json f)));
            Util.option_map v.source_key_id
              (fun f -> ("source_key_id", (String.to_json f)));
            Util.option_map v.ciphertext_blob
@@ -2456,7 +5611,13 @@ module ReEncryptResponse =
           (Util.option_map (Json.lookup j "ciphertext_blob") Blob.of_json);
         source_key_id =
           (Util.option_map (Json.lookup j "source_key_id") String.of_json);
-        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json)
+        key_id = (Util.option_map (Json.lookup j "key_id") String.of_json);
+        source_encryption_algorithm =
+          (Util.option_map (Json.lookup j "source_encryption_algorithm")
+             EncryptionAlgorithmSpec.of_json);
+        destination_encryption_algorithm =
+          (Util.option_map (Json.lookup j "destination_encryption_algorithm")
+             EncryptionAlgorithmSpec.of_json)
       }
   end
 module DisableKeyRotationRequest =
@@ -2510,5 +5671,30 @@ module CreateKeyResponse =
       {
         key_metadata =
           (Util.option_map (Json.lookup j "key_metadata") KeyMetadata.of_json)
+      }
+  end
+module CancelKeyDeletionRequest =
+  struct
+    type t = {
+      key_id: String.t }
+    let make ~key_id  () = { key_id }
+    let parse xml =
+      Some
+        {
+          key_id =
+            (Xml.required "KeyId"
+               (Util.option_bind (Xml.member "KeyId" xml) String.parse))
+        }
+    let to_query v =
+      Query.List
+        (Util.list_filter_opt
+           [Some (Query.Pair ("KeyId", (String.to_query v.key_id)))])
+    let to_json v =
+      `Assoc
+        (Util.list_filter_opt [Some ("key_id", (String.to_json v.key_id))])
+    let of_json j =
+      {
+        key_id =
+          (String.of_json (Util.of_option_exn (Json.lookup j "key_id")))
       }
   end
