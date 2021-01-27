@@ -1900,11 +1900,11 @@ module BlockDeviceMapping = struct
     Query.List
       (Util.list_filter_opt
          [ Util.option_map v.no_device (fun f ->
-               Query.Pair ("noDevice", String.to_query f))
-         ; Util.option_map v.ebs (fun f -> Query.Pair ("ebs", EbsBlockDevice.to_query f))
+               Query.Pair ("NoDevice", String.to_query f))
+         ; Util.option_map v.ebs (fun f -> Query.Pair ("Ebs", EbsBlockDevice.to_query f))
          ; Util.option_map v.virtual_name (fun f ->
-               Query.Pair ("virtualName", String.to_query f))
-         ; Some (Query.Pair ("deviceName", String.to_query v.device_name))
+               Query.Pair ("VirtualName", String.to_query f))
+         ; Some (Query.Pair ("DeviceName", String.to_query v.device_name))
          ])
 
   let to_json v =
