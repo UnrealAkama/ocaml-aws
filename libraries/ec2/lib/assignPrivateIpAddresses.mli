@@ -2,7 +2,7 @@ open Types
 
 type input = AssignPrivateIpAddressesRequest.t
 
-type output = AssignPrivateIpAddressesResult.t
+type output = unit
 
 type error = Errors_internal.t
 

@@ -2,7 +2,7 @@ open Types
 
 type input = RevokeSecurityGroupIngressRequest.t
 
-type output = RevokeSecurityGroupIngressResult.t
+type output = unit
 
 type error = Errors_internal.t
 

@@ -2,7 +2,7 @@ open Types
 
 type input = CreatePlacementGroupRequest.t
 
-type output = CreatePlacementGroupResult.t
+type output = unit
 
 type error = Errors_internal.t
 
